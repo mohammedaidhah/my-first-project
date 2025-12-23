@@ -1,7 +1,7 @@
 // api/visitors.js
 const { MongoClient } = require("mongodb");
 
-const uri = process.env.MONGODB_URI; // موجود في Vercel
+const uri = process.env.MONGODB_URI; // تأكد أن المتغير موجود في Vercel
 let client;
 let cachedDb;
 
@@ -16,13 +16,13 @@ async function connectToDatabase() {
     await client.connect();
   }
 
-const db = client.db("sample_mflix");
-const collection = db.collection("visitors");
+  const db = client.db("sample_mflix"); // اسم قاعدة البيانات
+  cachedDb = db;
+  return db;
 }
 
 module.exports = async (req, res) => {
   if (req.method === "OPTIONS") {
-    // دعم CORS البسيط
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "POST,GET,OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
