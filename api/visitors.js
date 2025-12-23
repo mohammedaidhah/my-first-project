@@ -1,7 +1,7 @@
 // api/visitors.js
 const { MongoClient } = require("mongodb");
 
-const uri = process.env.MONGODB_URI; // تأكد أن المتغير موجود في Vercel
+const uri = process.env.MONGODB_URL; // تأكد أن المتغير موجود في Vercel
 let client;
 let cachedDb;
 
