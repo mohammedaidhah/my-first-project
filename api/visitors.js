@@ -16,9 +16,8 @@ async function connectToDatabase() {
     await client.connect();
   }
 
-  const db = client.db("gostation_visitors"); // اسم قاعدة البيانات
-  cachedDb = db;
-  return db;
+const db = client.db("sample_mflix");
+const collection = db.collection("visitors");
 }
 
 module.exports = async (req, res) => {
