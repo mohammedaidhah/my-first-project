@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "main": "index.html",
   "license": "MIT",
+  "scripts": {
+    "start": "node api/visitors.js"
+  },
   "dependencies": {
     "mongodb": "^6.3.0"
   }
 }
-
