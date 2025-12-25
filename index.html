@@ -692,9 +692,57 @@
         }
     }
 </script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("visitor-form");
+
+    if (!form) {
+      console.error("لم يتم العثور على النموذج visitor-form");
+      return;
+    }
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const data = {
+        date:   formData.get("date"),
+        timeIn: formData.get("timeIn"),
+        name:   formData.get("name"),
+        mobile: formData.get("mobile"),
+        org:    formData.get("org"),
+        dept:   formData.get("dept"),
+        reason: formData.get("reason"),
+        appt:   formData.get("appt"),
+        notes:  formData.get("notes"),
+      };
+
+      try {
+        const res = await fetch("/api/visitors", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+
+        const result = await res.json();
+
+        if (res.ok) {
+          Swal.fire("تم الحفظ", "تم حفظ الزائر في النظام", "success");
+          form.reset();
+        } else {
+          Swal.fire("خطأ", result.message || "حدث خطأ أثناء الحفظ", "error");
+        }
+      } catch (err) {
+        console.error(err);
+        Swal.fire("خطأ اتصال", "تعذر الاتصال بالخادم، حاول مرة أخرى", "error");
+      }
+    });
+  });
+</script>
 
 </body>
 </html>
+
 
 
 
