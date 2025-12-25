@@ -474,11 +474,18 @@
 
     function loadDataFromLocal() {
       const data = localStorage.getItem('GoStationDB');
-      if (data) visitorsDB = JSON.parse(data);
+      console.log('[loadDataFromLocal] raw data:', data);
+      if (data) {
+        visitorsDB = JSON.parse(data);
+        console.log('[loadDataFromLocal] parsed length:', visitorsDB.length);
+      } else {
+        console.log('[loadDataFromLocal] no data in localStorage');
+      }
     }
 
     function saveDataToLocal() {
       localStorage.setItem('GoStationDB', JSON.stringify(visitorsDB));
+      console.log('[saveDataToLocal] saved length:', visitorsDB.length);
     }
 
     function autoSaveProcess() {
@@ -676,6 +683,7 @@
     }
 
     function downloadBackup() {
+      console.log('[downloadBackup] visitorsDB length:', visitorsDB.length);
       const blob = new Blob([JSON.stringify(visitorsDB)], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
@@ -685,22 +693,59 @@
 
     function restoreBackup() {
       const file = document.getElementById('jsonFile').files[0];
-      if (!file) return;
+      console.log('[restoreBackup] selected file:', file);
+
+      if (!file) {
+        console.warn('[restoreBackup] no file selected');
+        return;
+      }
 
       const reader = new FileReader();
       reader.onload = e => {
-        visitorsDB = JSON.parse(e.target.result || '[]');
-        saveDataToLocal();
-        Swal.fire('تم', 'تمت الاستعادة', 'success');
-        updateDashboard();
+        console.log('[restoreBackup] raw content:', e.target.result);
+
+        try {
+          const parsed = JSON.parse(e.target.result || '[]');
+          console.log('[restoreBackup] parsed length:', Array.isArray(parsed) ? parsed.length : 'not array');
+
+          if (!Array.isArray(parsed)) {
+            console.error('[restoreBackup] backup is not an array, aborting');
+            Swal.fire('خطأ في الملف', 'صيغة النسخة الاحتياطية غير صحيحة', 'error');
+            return;
+          }
+
+          visitorsDB = parsed;
+          console.log('[restoreBackup] visitorsDB length after assign:', visitorsDB.length);
+
+          saveDataToLocal();
+          console.log('[restoreBackup] data saved to localStorage');
+
+          Swal.fire('تم', 'تمت الاستعادة بنجاح', 'success');
+          updateDashboard();
+          console.log('[restoreBackup] dashboard updated');
+
+          switchPage('dashboard');
+          console.log('[restoreBackup] switched to dashboard page');
+        } catch (err) {
+          console.error('[restoreBackup] JSON parse error:', err);
+          Swal.fire('خطأ في قراءة الملف', 'تعذر قراءة محتوى النسخة الاحتياطية', 'error');
+        }
       };
+
+      reader.onerror = err => {
+        console.error('[restoreBackup] FileReader error:', err);
+        Swal.fire('خطأ في الملف', 'تعذر فتح ملف النسخة الاحتياطية', 'error');
+      };
+
       reader.readAsText(file);
+      console.log('[restoreBackup] reader.readAsText called');
     }
 
     function clearAllData() {
       if (confirm('تحذير: هل أنت متأكد من حذف كافة البيانات؟')) {
         visitorsDB = [];
         localStorage.removeItem('GoStationDB');
+        console.log('[clearAllData] all data cleared');
         updateDashboard();
       }
     }
