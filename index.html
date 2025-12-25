@@ -1,194 +1,192 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>نظام سجل الزوار - GoStation</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>نظام سجل الزوار - GoStation</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<style>
-/* نفس الاستايلات التي عندك بدون تغيير */
-:root {
---primary: #3D2F7B;
---accent: #EC671F;
---bg-light: #f3f4f7;
---text-dark: #2c3e50;
-}
-body {
-font-family: 'Cairo', sans-serif;
-background-color: var(--bg-light);
-overflow-x: hidden;
-}
-.sidebar {
-min-height: 100vh;
-background: var(--primary);
-color: white;
-padding-top: 20px;
-box-shadow: -5px 0 15px rgba(0,0,0,0.1);
-position: fixed;
-right: 0;
-width: 260px;
-z-index: 1000;
-transition: all 0.3s;
-}
-.logo-area {
-text-align: center;
-padding: 0 20px 30px 20px;
-border-bottom: 1px solid rgba(255,255,255,0.1);
-margin-bottom: 20px;
-}
-.logo-area img {
-max-width: 140px;
-height: auto;
-filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-}
-.nav-link {
-color: rgba(255,255,255,0.85);
-padding: 15px 25px;
-margin: 5px 15px;
-border-radius: 12px;
-font-weight: 600;
-transition: all 0.3s ease;
-display: flex;
-align-items: center;
-}
-.nav-link i { margin-left: 12px; width: 20px; text-align: center; font-size: 1.1rem; }
-.nav-link:hover {
-background: rgba(255,255,255,0.1);
-color: white;
-transform: translateX(-5px);
-}
-.nav-link.active {
-background: linear-gradient(45deg, var(--accent), #ff8e4b);
-color: white;
-box-shadow: 0 4px 15px rgba(236, 103, 31, 0.4);
-}
-.auto-save-box {
-position: absolute;
-bottom: 20px;
-left: 0;
-right: 0;
-text-align: center;
-padding: 15px;
-}
-.save-badge {
-background: rgba(0,0,0,0.3);
-padding: 8px 15px;
-border-radius: 20px;
-font-size: 0.8rem;
-color: #bdc3c7;
-display: inline-block;
-border: 1px solid rgba(255,255,255,0.1);
-}
-.pulse { animation: pulse-anim 2s infinite; color: #2ecc71; }
-@keyframes pulse-anim { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-.main-content {
-margin-right: 260px;
-padding: 30px;
-transition: all 0.3s;
-}
-.header-title {
-font-weight: 700;
-color: var(--primary);
-margin-bottom: 25px;
-display: flex;
-justify-content: space-between;
-align-items: center;
-}
-.stat-card {
-border: none;
-border-radius: 16px;
-color: white;
-overflow: hidden;
-position: relative;
-box-shadow: 0 10px 20px rgba(0,0,0,0.08);
-transition: transform 0.3s;
-min-height: 140px;
-display: flex;
-flex-direction: column;
-justify-content: center;
-}
-.stat-card:hover { transform: translateY(-5px); }
-.card-bg-1 { background: linear-gradient(135deg, var(--primary), #5a4b9f); }
-.card-bg-2 { background: linear-gradient(135deg, var(--accent), #f39c12); }
-.card-bg-3 { background: linear-gradient(135deg, #2c3e50, #4ca1af); }
-.stat-icon {
-position: absolute;
-left: 15px;
-top: 50%;
-transform: translateY(-50%);
-font-size: 3.5rem;
-opacity: 0.2;
-}
-.stat-value { font-size: 2.5rem; font-weight: 700; margin: 0; }
-.stat-label { font-size: 1rem; opacity: 0.9; }
-.content-card {
-background: white;
-border-radius: 16px;
-border: none;
-box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-padding: 25px;
-margin-bottom: 25px;
-}
-.form-control, .form-select {
-border-radius: 10px;
-padding: 12px;
-border: 1px solid #e0e0e0;
-background-color: #f9f9f9;
-}
-.form-control:focus {
-border-color: var(--primary);
-box-shadow: 0 0 0 4px rgba(61,47,123,0.1);
-background-color: white;
-}
-.btn-brand {
-background-color: var(--primary);
-color: white;
-border-radius: 10px;
-padding: 10px 30px;
-font-weight: 600;
-border: none;
-}
-.btn-brand:hover { background-color: #2b205a; color: white; }
-.btn-accent {
-background-color: var(--accent);
-color: white;
-border-radius: 10px;
-padding: 10px 30px;
-font-weight: 600;
-border: none;
-}
-.btn-accent:hover { background-color: #d35400; color: white; }
-.table thead th {
-background-color: #f8f9fa;
-color: var(--primary);
-font-weight: 700;
-border-bottom: 2px solid #eee;
-}
-.chart-wrapper {
-position: relative;
-height: 300px;
-width: 100%;
-}
-@media (max-width: 768px) {
-.sidebar { width: 80px; padding-top: 15px; }
-.sidebar .logo-area img { max-width: 40px; }
-.nav-link span { display: none; }
-.nav-link i { margin: 0; font-size: 1.5rem; }
-.main-content { margin-right: 80px; padding: 15px; }
-.auto-save-box { display: none; }
-.chart-wrapper { height: 250px; }
-}
-</style>
+  <style>
+    :root {
+      --primary: #3D2F7B;
+      --accent: #EC671F;
+      --bg-light: #f3f4f7;
+      --text-dark: #2c3e50;
+    }
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: var(--bg-light);
+      overflow-x: hidden;
+    }
+    .sidebar {
+      min-height: 100vh;
+      background: var(--primary);
+      color: white;
+      padding-top: 20px;
+      box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+      position: fixed;
+      right: 0;
+      width: 260px;
+      z-index: 1000;
+      transition: all 0.3s;
+    }
+    .logo-area {
+      text-align: center;
+      padding: 0 20px 30px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 20px;
+    }
+    .logo-area img {
+      max-width: 140px;
+      height: auto;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    }
+    .nav-link {
+      color: rgba(255,255,255,0.85);
+      padding: 15px 25px;
+      margin: 5px 15px;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+    }
+    .nav-link i { margin-left: 12px; width: 20px; text-align: center; font-size: 1.1rem; }
+    .nav-link:hover {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      transform: translateX(-5px);
+    }
+    .nav-link.active {
+      background: linear-gradient(45deg, var(--accent), #ff8e4b);
+      color: white;
+      box-shadow: 0 4px 15px rgba(236, 103, 31, 0.4);
+    }
+    .auto-save-box {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      padding: 15px;
+    }
+    .save-badge {
+      background: rgba(0,0,0,0.3);
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: #bdc3c7;
+      display: inline-block;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .pulse { animation: pulse-anim 2s infinite; color: #2ecc71; }
+    @keyframes pulse-anim { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    .main-content {
+      margin-right: 260px;
+      padding: 30px;
+      transition: all 0.3s;
+    }
+    .header-title {
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .stat-card {
+      border: none;
+      border-radius: 16px;
+      color: white;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+      transition: transform 0.3s;
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .stat-card:hover { transform: translateY(-5px); }
+    .card-bg-1 { background: linear-gradient(135deg, var(--primary), #5a4b9f); }
+    .card-bg-2 { background: linear-gradient(135deg, var(--accent), #f39c12); }
+    .card-bg-3 { background: linear-gradient(135deg, #2c3e50, #4ca1af); }
+    .stat-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 3.5rem;
+      opacity: 0.2;
+    }
+    .stat-value { font-size: 2.5rem; font-weight: 700; margin: 0; }
+    .stat-label { font-size: 1rem; opacity: 0.9; }
+    .content-card {
+      background: white;
+      border-radius: 16px;
+      border: none;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+      padding: 25px;
+      margin-bottom: 25px;
+    }
+    .form-control, .form-select {
+      border-radius: 10px;
+      padding: 12px;
+      border: 1px solid #e0e0e0;
+      background-color: #f9f9f9;
+    }
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(61,47,123,0.1);
+      background-color: white;
+    }
+    .btn-brand {
+      background-color: var(--primary);
+      color: white;
+      border-radius: 10px;
+      padding: 10px 30px;
+      font-weight: 600;
+      border: none;
+    }
+    .btn-brand:hover { background-color: #2b205a; color: white; }
+    .btn-accent {
+      background-color: var(--accent);
+      color: white;
+      border-radius: 10px;
+      padding: 10px 30px;
+      font-weight: 600;
+      border: none;
+    }
+    .btn-accent:hover { background-color: #d35400; color: white; }
+    .table thead th {
+      background-color: #f8f9fa;
+      color: var(--primary);
+      font-weight: 700;
+      border-bottom: 2px solid #eee;
+    }
+    .chart-wrapper {
+      position: relative;
+      height: 300px;
+      width: 100%;
+    }
+    @media (max-width: 768px) {
+      .sidebar { width: 80px; padding-top: 15px; }
+      .sidebar .logo-area img { max-width: 40px; }
+      .nav-link span { display: none; }
+      .nav-link i { margin: 0; font-size: 1.5rem; }
+      .main-content { margin-right: 80px; padding: 15px; }
+      .auto-save-box { display: none; }
+      .chart-wrapper { height: 250px; }
+    }
+  </style>
 </head>
-<body>
 <body>
   <div style="position: fixed; top: 15px; right: 25px; z-index: 9999;">
     <img src="logo gostation.png" alt="شعار قوستيشن" style="height: 55px;">
@@ -221,9 +219,7 @@ width: 100%;
     </div>
   </div>
 
-  <!-- حاوية المحتوى الرئيسية لكل الصفحات -->
   <div class="main-content">
-
     <!-- صفحة التسجيل -->
     <div id="register-page" class="fade-in">
       <div class="header-title">
@@ -427,359 +423,347 @@ width: 100%;
         </div>
       </div>
     </div>
+  </div>
 
-  </div><!-- نهاية main-content -->
+  <!-- سكربت الداشبورد -->
+  <script>
+    let visitorsDB = [];
+    const departments = [
+      "رئيس مجلس الادارة", "مكتب الرئيس التنفيذي", "الرئيس التنفيذي للتطوير ونائب الرئيس التنفيذي",
+      "الرئيس التنفيذي للعمليات", "الرئيس التنفيذي المالي", "التشغيل", "الصيانة", "التسويق",
+      "تقنية المعلومات", "الجودة", "المشتريات", "المشاريع", "الممتلكات", "علاقات حكومية",
+      "موارد بشرية", "النقليات", "الامتياز التجاري", "الشؤون القانونية", "الادارة المالية"
+    ];
 
-<script>
-// === المتغيرات والإعدادات ===
-let visitorsDB = [];
-const departments = [
-"رئيس مجلس الادارة", "مكتب الرئيس التنفيذي", "الرئيس التنفيذي للتطوير ونائب الرئيس التنفيذي",
-"الرئيس التنفيذي للعمليات", "الرئيس التنفيذي المالي", "التشغيل", "الصيانة", "التسويق",
-"تقنية المعلومات", "الجودة", "المشتريات", "المشاريع", "الممتلكات", "علاقات حكومية",
-"موارد بشرية", "النقليات", "الامتياز التجاري", "الشؤون القانونية", "الادارة المالية"
-];
-
-document.addEventListener('DOMContentLoaded', () => {
-const deptSelect = document.getElementById('vDept');
-departments.forEach(d => {
-const opt = document.createElement('option');
-opt.value = d;
-opt.innerText = d;
-deptSelect.appendChild(opt);
-});
-
-updateDateTime();
-setInterval(updateDateTime, 1000);
-loadDataFromLocal();
-setInterval(autoSaveProcess, 10000);
-updateDashboard();
-});
-
-function updateDateTime() {
-const now = new Date();
-document.getElementById('autoDate').value = now.toLocaleDateString('en-GB');
-document.getElementById('autoTime').value = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
-document.getElementById('headerTime').innerText =
-now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
-}
-
-function switchPage(pageId) {
-document.getElementById('register-page').style.display = 'none';
-document.getElementById('dashboard-page').style.display = 'none';
-document.getElementById('settings-page').style.display = 'none';
-document.getElementById(pageId + '-page').style.display = 'block';
-
-document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-const links = document.querySelectorAll('.nav-link');
-if(pageId === 'register') links[0].classList.add('active');
-if(pageId === 'dashboard') { links[1].classList.add('active'); updateDashboard(); }
-if(pageId === 'settings') links[2].classList.add('active');
-}
-
-function loadDataFromLocal() {
-const data = localStorage.getItem('GoStationDB');
-if (data) visitorsDB = JSON.parse(data);
-}
-
-function saveDataToLocal() {
-localStorage.setItem('GoStationDB', JSON.stringify(visitorsDB));
-}
-
-function autoSaveProcess() {
-saveDataToLocal();
-const badge = document.getElementById('saveStatus');
-const dot = document.getElementById('saveDot');
-badge.innerText = 'تم الحفظ: ' +
-new Date().toLocaleTimeString('en-US',
-{hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit'});
-dot.style.color = '#2ecc71';
-setTimeout(() => { badge.innerText = 'النظام متصل'; }, 3000);
-}
-
-// === دالة تحديث لوحة القيادة ===
-function updateDashboard() {
-if (!document.getElementById('statTotal')) return; // حماية لو عناصر الداشبورد غير معروضة بعد
-
-document.getElementById('statTotal').innerText = visitorsDB.length.toLocaleString();
-
-const todayStr = new Date().toLocaleDateString('en-GB');
-const todayCount = visitorsDB.filter(v => v.date === todayStr).length;
-document.getElementById('statToday').innerText = todayCount;
-
-const deptCounts = {};
-visitorsDB.forEach(v => {
-if (!v.dept) return;
-deptCounts[v.dept] = (deptCounts[v.dept] || 0) + 1;
-});
-
-let topDept = '-';
-let maxVal = 0;
-for (const [d, c] of Object.entries(deptCounts)) {
-if (c > maxVal) {
-maxVal = c;
-topDept = d;
-}
-}
-document.getElementById('statTopDept').innerText = topDept;
-
-renderTable();
-drawCharts(deptCounts);
-}
-<script>
-  // ... نفس الكود الموجود عندك حتى نهاية updateDashboard()
-
-  function renderTable() {
-    const tbody = document.getElementById('tableBody');
-    if (!tbody) return;
-
-    const filterInput = document.getElementById('searchBox');
-    const filter = filterInput ? filterInput.value.toUpperCase() : '';
-
-    tbody.innerHTML = '';
-
-    [...visitorsDB].reverse().forEach(v => {
-      if (
-        !filter ||
-        v.name.toUpperCase().includes(filter) ||
-        v.org.toUpperCase().includes(filter)
-      ) {
-        const row = `
-          <tr>
-            <td>${v.date || ''}</td>
-            <td>${v.timeIn || ''}</td>
-            <td class="fw-bold text-primary">${v.name || ''}</td>
-            <td>${v.org || ''}</td>
-            <td><span class="badge bg-light text-dark border">${v.dept || ''}</span></td>
-            <td><span class="badge bg-success">تم الدخول</span></td>
-            <td>
-              <button class="btn btn-sm btn-outline-danger" onclick="deleteVisitor(${v.id})">
-                <i class="fas fa-trash"></i>
-              </button>
-            </td>
-          </tr>`;
-        tbody.insertAdjacentHTML('beforeend', row);
-      }
-    });
-  }
-
-  function deleteVisitor(id) {
-    Swal.fire({
-      title: 'حذف السجل؟',
-      text: 'لا يمكن التراجع عن الحذف',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      confirmButtonText: 'حذف'
-    }).then(result => {
-      if (result.isConfirmed) {
-        visitorsDB = visitorsDB.filter(v => v.id !== id);
-        saveDataToLocal();
-        updateDashboard();
-        Swal.fire('تم الحذف', '', 'success');
-      }
-    });
-  }
-
-  let chartDeptInstance = null;
-  let chartTimeInstance = null;
-
-  function drawCharts(deptCounts) {
-    // مخطط الإدارات
-    const deptCanvas = document.getElementById('chartDept');
-    if (deptCanvas) {
-      const ctxDept = deptCanvas.getContext('2d');
-      if (chartDeptInstance) chartDeptInstance.destroy();
-
-      chartDeptInstance = new Chart(ctxDept, {
-        type: 'doughnut',
-        data: {
-          labels: Object.keys(deptCounts),
-          datasets: [{
-            data: Object.values(deptCounts),
-            backgroundColor: ['#3D2F7B', '#EC671F', '#5D4F9B', '#F39C12', '#2ECC71', '#95A5A6'],
-            borderWidth: 0
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { position: 'right' } }
-        }
+    document.addEventListener('DOMContentLoaded', () => {
+      const deptSelect = document.getElementById('vDept');
+      departments.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d;
+        opt.innerText = d;
+        deptSelect.appendChild(opt);
       });
-    }
 
-    // تجميع أوقات الدخول بالساعات
-    const timeCounts = {};
-    visitorsDB.forEach(v => {
-      if (v.timeIn) {
-        const h = v.timeIn.split(':')[0];
-        timeCounts[h] = (timeCounts[h] || 0) + 1;
-      }
+      updateDateTime();
+      setInterval(updateDateTime, 1000);
+      loadDataFromLocal();
+      setInterval(autoSaveProcess, 10000);
+      updateDashboard();
     });
 
-    const timeCanvas = document.getElementById('chartTime');
-    if (timeCanvas) {
-      const ctxTime = timeCanvas.getContext('2d');
-      if (chartTimeInstance) chartTimeInstance.destroy();
-
-      chartTimeInstance = new Chart(ctxTime, {
-        type: 'bar',
-        data: {
-          labels: Object.keys(timeCounts).map(h => h + ':00'),
-          datasets: [{
-            label: 'عدد الزوار',
-            data: Object.values(timeCounts),
-            backgroundColor: '#3D2F7B',
-            borderRadius: 5
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: { y: { beginAtZero: true } }
-        }
-      });
-    }
-  }
-
-  function printBadge() {
-    const name = document.getElementById('vName').value;
-    const org  = document.getElementById('vOrg').value;
-
-    if (!name) {
-      Swal.fire('تنبيه', 'أدخل اسم الزائر أولاً', 'warning');
-      return;
+    function updateDateTime() {
+      const now = new Date();
+      document.getElementById('autoDate').value = now.toLocaleDateString('en-GB');
+      document.getElementById('autoTime').value = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+      document.getElementById('headerTime').innerText =
+        now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
     }
 
-    const win = window.open('', '', 'height=500,width=400');
-    win.document.write(`
-      <html dir="rtl">
-        <body style="text-align:center; font-family:'Cairo';
-                     border:4px solid #3D2F7B; padding:20px; border-radius:15px;">
-          <h3 style="color:#EC671F; margin-bottom:5px;">GoStation</h3>
-          <h2 style="margin:0; border-bottom:1px solid #ccc; padding-bottom:15px;">تصريح زائر</h2>
-          <h1 style="font-size:2.5em; margin:30px 0; color:#3D2F7B;">${name}</h1>
-          <h3 style="color:#555;">${org}</h3>
-          <div style="margin-top:40px; text-align:right; font-size:14px;">
-            <p><strong>التاريخ:</strong> ${new Date().toLocaleDateString('en-GB')}</p>
-            <p><strong>الوقت:</strong> ${new Date().toLocaleTimeString('en-US',
-                {hour:'2-digit', minute:'2-digit'})}</p>
-          </div>
-        </body>
-      </html>
-    `);
-    win.document.close();
-    win.print();
-  }
+    function switchPage(pageId) {
+      document.getElementById('register-page').style.display = 'none';
+      document.getElementById('dashboard-page').style.display = 'none';
+      document.getElementById('settings-page').style.display = 'none';
+      document.getElementById(pageId + '-page').style.display = 'block';
 
-  function exportToExcel() {
-    if (visitorsDB.length === 0) {
-      Swal.fire('تنبيه', 'لا توجد بيانات', 'info');
-      return;
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      const links = document.querySelectorAll('.nav-link');
+      if(pageId === 'register') links[0].classList.add('active');
+      if(pageId === 'dashboard') { links[1].classList.add('active'); updateDashboard(); }
+      if(pageId === 'settings') links[2].classList.add('active');
     }
-    const ws = XLSX.utils.json_to_sheet(visitorsDB);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Visitors');
-    XLSX.writeFile(wb, `GoStation_Visitors_${new Date().toISOString().slice(0,10)}.xlsx`);
-  }
 
-  function downloadBackup() {
-    const blob = new Blob([JSON.stringify(visitorsDB)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `Backup_${new Date().toISOString().slice(0,10)}.json`;
-    a.click();
-  }
+    function loadDataFromLocal() {
+      const data = localStorage.getItem('GoStationDB');
+      if (data) visitorsDB = JSON.parse(data);
+    }
 
-  function restoreBackup() {
-    const file = document.getElementById('jsonFile').files[0];
-    if (!file) return;
+    function saveDataToLocal() {
+      localStorage.setItem('GoStationDB', JSON.stringify(visitorsDB));
+    }
 
-    const reader = new FileReader();
-    reader.onload = e => {
-      visitorsDB = JSON.parse(e.target.result || '[]');
+    function autoSaveProcess() {
       saveDataToLocal();
-      Swal.fire('تم', 'تمت الاستعادة', 'success');
-      updateDashboard();
-    };
-    reader.readAsText(file);
-  }
-
-  function clearAllData() {
-    if (confirm('تحذير: هل أنت متأكد من حذف كافة البيانات؟')) {
-      visitorsDB = [];
-      localStorage.removeItem('GoStationDB');
-      updateDashboard();
+      const badge = document.getElementById('saveStatus');
+      const dot = document.getElementById('saveDot');
+      badge.innerText = 'تم الحفظ: ' +
+        new Date().toLocaleTimeString('en-US',
+          {hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit'});
+      dot.style.color = '#2ecc71';
+      setTimeout(() => { badge.innerText = 'النظام متصل'; }, 3000);
     }
-  }
-</script>
 
-// === بقية دوال الداشبورد (انسخها من نسختك السابقة كما هي): renderTable, deleteVisitor, drawCharts, printBadge, exportToExcel, downloadBackup, restoreBackup, clearAllData ===
-</script>
+    function updateDashboard() {
+      const totalEl = document.getElementById('statTotal');
+      if (!totalEl) return;
 
-<!-- سكربت ربط النموذج بـ /api/visitors -->
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-const form = document.getElementById("visitor-form");
+      totalEl.innerText = visitorsDB.length.toLocaleString();
 
-if (!form) {
-console.error("لم يتم العثور على النموذج visitor-form");
-return;
-}
+      const todayStr = new Date().toLocaleDateString('en-GB');
+      const todayCount = visitorsDB.filter(v => v.date === todayStr).length;
+      document.getElementById('statToday').innerText = todayCount;
 
-form.addEventListener("submit", async function (e) {
-e.preventDefault();
+      const deptCounts = {};
+      visitorsDB.forEach(v => {
+        if (!v.dept) return;
+        deptCounts[v.dept] = (deptCounts[v.dept] || 0) + 1;
+      });
 
-const formData = new FormData(form);
-const data = {
-date: formData.get("date"),
-timeIn: formData.get("timeIn"),
-name: formData.get("name"),
-mobile: formData.get("mobile"),
-org: formData.get("org"),
-dept: formData.get("dept"),
-reason: formData.get("reason"),
-appt: formData.get("appt"),
-notes: formData.get("notes"),
-};
+      let topDept = '-';
+      let maxVal = 0;
+      for (const [d, c] of Object.entries(deptCounts)) {
+        if (c > maxVal) {
+          maxVal = c;
+          topDept = d;
+        }
+      }
+      document.getElementById('statTopDept').innerText = topDept;
 
-visitorsDB.push({
-id: Date.now(),
-...data
-});
-if (typeof saveDataToLocal === "function") {
-saveDataToLocal();
-}
-if (typeof updateDashboard === "function") {
-updateDashboard();
-}
+      renderTable();
+      drawCharts(deptCounts);
+    }
 
-try {
-const res = await fetch("/api/visitors", {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify(data),
-});
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      if (!tbody) return;
 
-const result = await res.json();
+      const filterInput = document.getElementById('searchBox');
+      const filter = filterInput ? filterInput.value.toUpperCase() : '';
 
-if (res.ok) {
-Swal.fire("تم الحفظ", "تم حفظ الزائر في النظام", "success");
-form.reset();
-} else {
-Swal.fire("خطأ", result.message || "حدث خطأ أثناء الحفظ", "error");
-}
-} catch (err) {
-console.error(err);
-Swal.fire("خطأ اتصال", "تعذر الاتصال بالخادم، حاول مرة أخرى", "error");
-}
-});
-});
-</script>
+      tbody.innerHTML = '';
 
+      [...visitorsDB].reverse().forEach(v => {
+        if (
+          !filter ||
+          (v.name && v.name.toUpperCase().includes(filter)) ||
+          (v.org && v.org.toUpperCase().includes(filter))
+        ) {
+          const row = `
+            <tr>
+              <td>${v.date || ''}</td>
+              <td>${v.timeIn || ''}</td>
+              <td class="fw-bold text-primary">${v.name || ''}</td>
+              <td>${v.org || ''}</td>
+              <td><span class="badge bg-light text-dark border">${v.dept || ''}</span></td>
+              <td><span class="badge bg-success">تم الدخول</span></td>
+              <td>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteVisitor(${v.id})">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>`;
+          tbody.insertAdjacentHTML('beforeend', row);
+        }
+      });
+    }
+
+    function deleteVisitor(id) {
+      Swal.fire({
+        title: 'حذف السجل؟',
+        text: 'لا يمكن التراجع عن الحذف',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'حذف'
+      }).then(result => {
+        if (result.isConfirmed) {
+          visitorsDB = visitorsDB.filter(v => v.id !== id);
+          saveDataToLocal();
+          updateDashboard();
+          Swal.fire('تم الحذف', '', 'success');
+        }
+      });
+    }
+
+    let chartDeptInstance = null;
+    let chartTimeInstance = null;
+
+    function drawCharts(deptCounts) {
+      const deptCanvas = document.getElementById('chartDept');
+      if (deptCanvas) {
+        const ctxDept = deptCanvas.getContext('2d');
+        if (chartDeptInstance) chartDeptInstance.destroy();
+
+        chartDeptInstance = new Chart(ctxDept, {
+          type: 'doughnut',
+          data: {
+            labels: Object.keys(deptCounts),
+            datasets: [{
+              data: Object.values(deptCounts),
+              backgroundColor: ['#3D2F7B', '#EC671F', '#5D4F9B', '#F39C12', '#2ECC71', '#95A5A6'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'right' } }
+          }
+        });
+      }
+
+      const timeCounts = {};
+      visitorsDB.forEach(v => {
+        if (v.timeIn) {
+          const h = v.timeIn.split(':')[0];
+          timeCounts[h] = (timeCounts[h] || 0) + 1;
+        }
+      });
+
+      const timeCanvas = document.getElementById('chartTime');
+      if (timeCanvas) {
+        const ctxTime = timeCanvas.getContext('2d');
+        if (chartTimeInstance) chartTimeInstance.destroy();
+
+        chartTimeInstance = new Chart(ctxTime, {
+          type: 'bar',
+          data: {
+            labels: Object.keys(timeCounts).map(h => h + ':00'),
+            datasets: [{
+              label: 'عدد الزوار',
+              data: Object.values(timeCounts),
+              backgroundColor: '#3D2F7B',
+              borderRadius: 5
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+      }
+    }
+
+    function printBadge() {
+      const name = document.getElementById('vName').value;
+      const org  = document.getElementById('vOrg').value;
+
+      if (!name) {
+        Swal.fire('تنبيه', 'أدخل اسم الزائر أولاً', 'warning');
+        return;
+      }
+
+      const win = window.open('', '', 'height=500,width=400');
+      win.document.write(`
+        <html dir="rtl">
+          <body style="text-align:center; font-family:'Cairo';
+                       border:4px solid #3D2F7B; padding:20px; border-radius:15px;">
+            <h3 style="color:#EC671F; margin-bottom:5px;">GoStation</h3>
+            <h2 style="margin:0; border-bottom:1px solid #ccc; padding-bottom:15px;">تصريح زائر</h2>
+            <h1 style="font-size:2.5em; margin:30px 0; color:#3D2F7B;">${name}</h1>
+            <h3 style="color:#555;">${org}</h3>
+            <div style="margin-top:40px; text-align:right; font-size:14px;">
+              <p><strong>التاريخ:</strong> ${new Date().toLocaleDateString('en-GB')}</p>
+              <p><strong>الوقت:</strong> ${new Date().toLocaleTimeString('en-US',
+                  {hour:'2-digit', minute:'2-digit'})}</p>
+            </div>
+          </body>
+        </html>
+      `);
+      win.document.close();
+      win.print();
+    }
+
+    function exportToExcel() {
+      if (visitorsDB.length === 0) {
+        Swal.fire('تنبيه', 'لا توجد بيانات', 'info');
+        return;
+      }
+      const ws = XLSX.utils.json_to_sheet(visitorsDB);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Visitors');
+      XLSX.writeFile(wb, `GoStation_Visitors_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+    function downloadBackup() {
+      const blob = new Blob([JSON.stringify(visitorsDB)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `Backup_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+    }
+
+    function restoreBackup() {
+      const file = document.getElementById('jsonFile').files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = e => {
+        visitorsDB = JSON.parse(e.target.result || '[]');
+        saveDataToLocal();
+        Swal.fire('تم', 'تمت الاستعادة', 'success');
+        updateDashboard();
+      };
+      reader.readAsText(file);
+    }
+
+    function clearAllData() {
+      if (confirm('تحذير: هل أنت متأكد من حذف كافة البيانات؟')) {
+        visitorsDB = [];
+        localStorage.removeItem('GoStationDB');
+        updateDashboard();
+      }
+    }
+  </script>
+
+  <!-- سكربت ربط النموذج بـ /api/visitors -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const form = document.getElementById("visitor-form");
+
+      if (!form) {
+        console.error("لم يتم العثور على النموذج visitor-form");
+        return;
+      }
+
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+        const data = {
+          date: formData.get("date"),
+          timeIn: formData.get("timeIn"),
+          name: formData.get("name"),
+          mobile: formData.get("mobile"),
+          org: formData.get("org"),
+          dept: formData.get("dept"),
+          reason: formData.get("reason"),
+          appt: formData.get("appt"),
+          notes: formData.get("notes"),
+        };
+
+        visitorsDB.push({
+          id: Date.now(),
+          ...data
+        });
+        if (typeof saveDataToLocal === "function") {
+          saveDataToLocal();
+        }
+        if (typeof updateDashboard === "function") {
+          updateDashboard();
+        }
+
+        try {
+          const res = await fetch("/api/visitors", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+
+          const result = await res.json();
+
+          if (res.ok) {
+            Swal.fire("تم الحفظ", "تم حفظ الزائر في النظام", "success");
+            form.reset();
+          } else {
+            Swal.fire("خطأ", result.message || "حدث خطأ أثناء الحفظ", "error");
+          }
+        } catch (err) {
+          console.error(err);
+          Swal.fire("خطأ اتصال", "تعذر الاتصال بالخادم، حاول مرة أخرى", "error");
+        }
+      });
+    });
+  </script>
 </body>
 </html>
-
-
-
