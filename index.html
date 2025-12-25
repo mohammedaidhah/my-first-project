@@ -412,6 +412,36 @@
     // احتفظ بجميع دوال updateDashboard / renderTable / deleteVisitor / drawCharts / printBadge / exportToExcel / downloadBackup / restoreBackup / clearAllData كما في كودك الأصلي.
 
 </script>
+function updateDashboard() {
+  // إجمالي الزوار
+  document.getElementById('statTotal').innerText = visitorsDB.length.toLocaleString();
+
+  // زوار اليوم
+  const todayStr = new Date().toLocaleDateString('en-GB');
+  const todayCount = visitorsDB.filter(v => v.date === todayStr).length;
+  document.getElementById('statToday').innerText = todayCount;
+
+  // أكثر إدارة استقبالاً للزوار
+  const deptCounts = {};
+  visitorsDB.forEach(v => {
+    if (!v.dept) return;
+    deptCounts[v.dept] = (deptCounts[v.dept] || 0) + 1;
+  });
+
+  let topDept = '-';
+  let maxVal = 0;
+  for (const [d, c] of Object.entries(deptCounts)) {
+    if (c > maxVal) {
+      maxVal = c;
+      topDept = d;
+    }
+  }
+  document.getElementById('statTopDept').innerText = topDept;
+
+  // تحديث الجدول والرسوم
+  renderTable();
+  drawCharts(deptCounts);
+}
 
 <!-- سكربت ربط النموذج بـ /api/visitors -->
 <script>
@@ -477,4 +507,5 @@
 
 </body>
 </html>
+
 
