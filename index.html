@@ -189,252 +189,246 @@ width: 100%;
 </style>
 </head>
 <body>
-<div style="position: fixed; top: 15px; right: 25px; z-index: 9999;">
-<img src="logo gostation.png" alt="شعار قوستيشن" style="height: 55px;">
-</div>
+<body>
+  <div style="position: fixed; top: 15px; right: 25px; z-index: 9999;">
+    <img src="logo gostation.png" alt="شعار قوستيشن" style="height: 55px;">
+  </div>
 
-<div class="sidebar">
-<div class="logo-area">
-<img src="logo.png" alt="GoStation Logo"
-onerror="this.style.display='none'; document.getElementById('alt-logo').style.display='block';">
-<h4 id="alt-logo" style="display:none; color:white; font-weight:bold; margin-top:10px;">Go Station</h4>
-</div>
+  <div class="sidebar">
+    <div class="logo-area">
+      <img src="logo.png" alt="GoStation Logo"
+           onerror="this.style.display='none'; document.getElementById('alt-logo').style.display='block';">
+      <h4 id="alt-logo" style="display:none; color:white; font-weight:bold; margin-top:10px;">Go Station</h4>
+    </div>
 
-<nav class="nav flex-column">
-<a class="nav-link active" onclick="switchPage('register')">
-<i class="fas fa-plus-circle"></i> <span>تسجيل زائر</span>
-</a>
-<a class="nav-link" onclick="switchPage('dashboard')">
-<i class="fas fa-chart-pie"></i> <span>لوحة القيادة</span>
-</a>
-<a class="nav-link" onclick="switchPage('settings')">
-<i class="fas fa-cogs"></i> <span>إدارة النظام</span>
-</a>
-</nav>
+    <nav class="nav flex-column">
+      <a class="nav-link active" onclick="switchPage('register')">
+        <i class="fas fa-plus-circle"></i> <span>تسجيل زائر</span>
+      </a>
+      <a class="nav-link" onclick="switchPage('dashboard')">
+        <i class="fas fa-chart-pie"></i> <span>لوحة القيادة</span>
+      </a>
+      <a class="nav-link" onclick="switchPage('settings')">
+        <i class="fas fa-cogs"></i> <span>إدارة النظام</span>
+      </a>
+    </nav>
 
-<div class="auto-save-box">
-<div class="save-badge">
-<i class="fas fa-circle pulse" id="saveDot"></i>
-<span id="saveStatus">النظام متصل</span>
-</div>
-</div>
-</div>
+    <div class="auto-save-box">
+      <div class="save-badge">
+        <i class="fas fa-circle pulse" id="saveDot"></i>
+        <span id="saveStatus">النظام متصل</span>
+      </div>
+    </div>
+  </div>
 
-  <!-- صفحة لوحة القيادة -->
-  <div id="dashboard-page" style="display:none;">
-    <div class="header-title">
+  <!-- حاوية المحتوى الرئيسية لكل الصفحات -->
+  <div class="main-content">
+
+    <!-- صفحة التسجيل -->
+    <div id="register-page" class="fade-in">
+      <div class="header-title">
+        <h3><i class="fas fa-door-open ms-2 text-warning"></i> بوابة الزوار</h3>
+        <div class="text-muted h6">
+          <i class="far fa-clock ms-1"></i> <span id="headerTime">--:--</span>
+        </div>
+      </div>
+
+      <form id="visitor-form">
+        <div class="content-card">
+          <h5 class="mb-4 text-primary fw-bold">بيانات الدخول</h5>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label text-muted small">تاريخ اليوم</label>
+              <input type="text" class="form-control" id="autoDate" name="date" readonly
+                     style="background:#f1f2f6; cursor:not-allowed;">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label text-muted small">وقت الوصول</label>
+              <input type="text" class="form-control" id="autoTime" name="timeIn" readonly
+                     style="background:#f1f2f6; cursor:not-allowed;">
+            </div>
+
+            <div class="col-12"><hr class="text-muted opacity-25"></div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-bold">اسم الزائر <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="vName" name="name"
+                     placeholder="الاسم الثلاثي" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">رقم الجوال <span class="text-danger">*</span></label>
+              <input type="tel" class="form-control" id="vMobile" name="mobile"
+                     placeholder="05xxxxxxxx" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">الجهة / الشركة</label>
+              <input type="text" class="form-control" id="vOrg" name="org"
+                     placeholder="اسم الجهة القادم منها" required>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">الإدارة المستهدفة</label>
+              <select class="form-select" id="vDept" name="dept" required></select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">الغرض من الزيارة</label>
+              <select class="form-select" id="vReason" name="reason">
+                <option value="اجتماع عمل">اجتماع عمل</option>
+                <option value="مقابلة توظيف">مقابلة توظيف</option>
+                <option value="خدمات صيانة">خدمات صيانة</option>
+                <option value="توصيل بريد/طرد">توصيل بريد/طرد</option>
+                <option value="زيارة رسمية">زيارة رسمية</option>
+                <option value="أخرى">أخرى</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">موعد مسبق؟</label>
+              <select class="form-select" id="vAppt" name="appt">
+                <option value="نعم">نعم</option>
+                <option value="لا">لا</option>
+              </select>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">ملاحظات إضافية</label>
+              <textarea class="form-control" id="vNotes" name="notes" rows="2"></textarea>
+            </div>
+
+            <div class="col-12 mt-4 d-flex justify-content-end gap-2">
+              <button type="button" class="btn btn-outline-secondary px-4"
+                      onclick="document.getElementById('visitor-form').reset()">
+                <i class="fas fa-undo ms-2"></i> مسح
+              </button>
+              <button type="button" class="btn btn-brand px-4" onclick="printBadge()">
+                <i class="fas fa-id-badge ms-2"></i> طباعة تصريح
+              </button>
+              <button type="submit" class="btn btn-accent px-5">
+                <i class="fas fa-save ms-2"></i> حفظ الدخول
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- صفحة لوحة القيادة -->
+    <div id="dashboard-page" style="display:none;">
+      <div class="header-title">
         <h3><i class="fas fa-chart-line ms-2 text-warning"></i> لوحة المعلومات والتقارير</h3>
         <button class="btn btn-success btn-sm" onclick="exportToExcel()">
-            <i class="fas fa-file-excel ms-2"></i> تصدير Excel
+          <i class="fas fa-file-excel ms-2"></i> تصدير Excel
         </button>
-    </div>
+      </div>
 
-    <div class="row mb-4 g-3">
+      <div class="row mb-4 g-3">
         <div class="col-md-4">
-            <div class="stat-card card-bg-1 p-4">
-                <i class="fas fa-users stat-icon"></i>
-                <h3 class="stat-value" id="statTotal">0</h3>
-                <div class="stat-label">إجمالي الزوار المسجلين</div>
-            </div>
+          <div class="stat-card card-bg-1 p-4">
+            <i class="fas fa-users stat-icon"></i>
+            <h3 class="stat-value" id="statTotal">0</h3>
+            <div class="stat-label">إجمالي الزوار المسجلين</div>
+          </div>
         </div>
         <div class="col-md-4">
-            <div class="stat-card card-bg-2 p-4">
-                <i class="fas fa-user-clock stat-icon"></i>
-                <h3 class="stat-value" id="statToday">0</h3>
-                <div class="stat-label">زوار اليوم</div>
-            </div>
+          <div class="stat-card card-bg-2 p-4">
+            <i class="fas fa-user-clock stat-icon"></i>
+            <h3 class="stat-value" id="statToday">0</h3>
+            <div class="stat-label">زوار اليوم</div>
+          </div>
         </div>
         <div class="col-md-4">
-            <div class="stat-card card-bg-3 p-4">
-                <i class="fas fa-building stat-icon"></i>
-                <h3 class="stat-value h4" id="statTopDept">-</h3>
-                <div class="stat-label">الإدارة الأكثر نشاطاً</div>
-            </div>
+          <div class="stat-card card-bg-3 p-4">
+            <i class="fas fa-building stat-icon"></i>
+            <h3 class="stat-value h4" id="statTopDept">-</h3>
+            <div class="stat-label">الإدارة الأكثر نشاطاً</div>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <div class="row mb-4">
+      <div class="row mb-4">
         <div class="col-md-7">
-            <div class="content-card">
-                <h5 class="fw-bold mb-3">ساعات الذروة (أوقات الدخول)</h5>
-                <div class="chart-wrapper">
-                    <canvas id="chartTime"></canvas>
-                </div>
+          <div class="content-card">
+            <h5 class="fw-bold mb-3">ساعات الذروة (أوقات الدخول)</h5>
+            <div class="chart-wrapper">
+              <canvas id="chartTime"></canvas>
             </div>
+          </div>
         </div>
         <div class="col-md-5">
-            <div class="content-card">
-                <h5 class="fw-bold mb-3">توزيع الزوار حسب الإدارة</h5>
-                <div class="chart-wrapper">
-                    <canvas id="chartDept"></canvas>
-                </div>
+          <div class="content-card">
+            <h5 class="fw-bold mb-3">توزيع الزوار حسب الإدارة</h5>
+            <div class="chart-wrapper">
+              <canvas id="chartDept"></canvas>
             </div>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <div class="content-card">
+      <div class="content-card">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="fw-bold m-0">سجل أحدث الزوار</h5>
-            <input type="text" id="searchBox" class="form-control w-25"
-                   placeholder="بحث باسم الزائر..." onkeyup="renderTable()">
+          <h5 class="fw-bold m-0">سجل أحدث الزوار</h5>
+          <input type="text" id="searchBox" class="form-control w-25"
+                 placeholder="بحث باسم الزائر..." onkeyup="renderTable()">
         </div>
         <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>التاريخ</th>
-                        <th>الوقت</th>
-                        <th>اسم الزائر</th>
-                        <th>الجهة</th>
-                        <th>الإدارة</th>
-                        <th>الحالة</th>
-                        <th>إجراء</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>التاريخ</th>
+                <th>الوقت</th>
+                <th>اسم الزائر</th>
+                <th>الجهة</th>
+                <th>الإدارة</th>
+                <th>الحالة</th>
+                <th>إجراء</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
         </div>
+      </div>
     </div>
-  </div>
 
-  <!-- صفحة الإعدادات -->
-  <div id="settings-page" style="display:none;">
-    <div class="header-title">
+    <!-- صفحة الإعدادات -->
+    <div id="settings-page" style="display:none;">
+      <div class="header-title">
         <h3><i class="fas fa-database ms-2 text-warning"></i> إدارة النظام والنسخ الاحتياطي</h3>
-    </div>
+      </div>
 
-    <div class="row g-4">
+      <div class="row g-4">
         <div class="col-md-6">
-            <div class="content-card h-100 border-primary border-top border-4">
-                <h5 class="text-primary fw-bold">
-                    <i class="fas fa-download ms-2"></i> حفظ نسخة احتياطية
-                </h5>
-                <p class="text-muted">تنزيل ملف (JSON) لقاعدة البيانات.</p>
-                <button class="btn btn-primary w-100 mt-3"
-                        onclick="downloadBackup()">تحميل قاعدة البيانات</button>
-            </div>
+          <div class="content-card h-100 border-primary border-top border-4">
+            <h5 class="text-primary fw-bold">
+              <i class="fas fa-download ms-2"></i> حفظ نسخة احتياطية
+            </h5>
+            <p class="text-muted">تنزيل ملف (JSON) لقاعدة البيانات.</p>
+            <button class="btn btn-primary w-100 mt-3"
+                    onclick="downloadBackup()">تحميل قاعدة البيانات</button>
+          </div>
         </div>
         <div class="col-md-6">
-            <div class="content-card h-100 border-warning border-top border-4">
-                <h5 class="text-warning fw-bold">
-                    <i class="fas fa-upload ms-2"></i> استعادة نسخة سابقة
-                </h5>
-                <p class="text-muted">استرجاع البيانات من ملف تم حفظه مسبقاً.</p>
-                <input type="file" id="jsonFile" accept=".json" class="form-control mt-2">
-                <button class="btn btn-outline-warning w-100 mt-2"
-                        onclick="restoreBackup()">بدء الاستعادة</button>
-            </div>
+          <div class="content-card h-100 border-warning border-top border-4">
+            <h5 class="text-warning fw-bold">
+              <i class="fas fa-upload ms-2"></i> استعادة نسخة سابقة
+            </h5>
+            <p class="text-muted">استرجاع البيانات من ملف تم حفظه مسبقاً.</p>
+            <input type="file" id="jsonFile" accept=".json" class="form-control mt-2">
+            <button class="btn btn-outline-warning w-100 mt-2"
+                    onclick="restoreBackup()">بدء الاستعادة</button>
+          </div>
         </div>
         <div class="col-12">
-            <div class="content-card border-danger border-top border-4">
-                <h5 class="text-danger fw-bold">
-                    <i class="fas fa-trash-alt ms-2"></i> منطقة الخطر
-                </h5>
-                <p class="text-danger">حذف جميع السجلات نهائياً.</p>
-                <button class="btn btn-danger" onclick="clearAllData()">حذف كافة البيانات</button>
-            </div>
+          <div class="content-card border-danger border-top border-4">
+            <h5 class="text-danger fw-bold">
+              <i class="fas fa-trash-alt ms-2"></i> منطقة الخطر
+            </h5>
+            <p class="text-danger">حذف جميع السجلات نهائياً.</p>
+            <button class="btn btn-danger" onclick="clearAllData()">حذف كافة البيانات</button>
+          </div>
         </div>
+      </div>
     </div>
-  </div>
 
-<!-- صفحة التسجيل -->
-<div id="register-page" class="fade-in">
-<div class="header-title">
-<h3><i class="fas fa-door-open ms-2 text-warning"></i> بوابة الزوار</h3>
-<div class="text-muted h6">
-<i class="far fa-clock ms-1"></i> <span id="headerTime">--:--</span>
-</div>
-</div>
-
-<form id="visitor-form">
-<div class="content-card">
-<h5 class="mb-4 text-primary fw-bold">بيانات الدخول</h5>
-<div class="row g-3">
-<div class="col-md-6">
-<label class="form-label text-muted small">تاريخ اليوم</label>
-<input type="text" class="form-control" id="autoDate" name="date" readonly
-style="background:#f1f2f6; cursor:not-allowed;">
-</div>
-<div class="col-md-6">
-<label class="form-label text-muted small">وقت الوصول</label>
-<input type="text" class="form-control" id="autoTime" name="timeIn" readonly
-style="background:#f1f2f6; cursor:not-allowed;">
-</div>
-
-<div class="col-12"><hr class="text-muted opacity-25"></div>
-
-<div class="col-md-4">
-<label class="form-label fw-bold">اسم الزائر <span class="text-danger">*</span></label>
-<input type="text" class="form-control" id="vName" name="name"
-placeholder="الاسم الثلاثي" required>
-</div>
-<div class="col-md-4">
-<label class="form-label fw-bold">رقم الجوال <span class="text-danger">*</span></label>
-<input type="tel" class="form-control" id="vMobile" name="mobile"
-placeholder="05xxxxxxxx" required>
-</div>
-<div class="col-md-4">
-<label class="form-label fw-bold">الجهة / الشركة</label>
-<input type="text" class="form-control" id="vOrg" name="org"
-placeholder="اسم الجهة القادم منها" required>
-</div>
-
-<div class="col-md-4">
-<label class="form-label">الإدارة المستهدفة</label>
-<select class="form-select" id="vDept" name="dept" required></select>
-</div>
-<div class="col-md-4">
-<label class="form-label">الغرض من الزيارة</label>
-<select class="form-select" id="vReason" name="reason">
-<option value="اجتماع عمل">اجتماع عمل</option>
-<option value="مقابلة توظيف">مقابلة توظيف</option>
-<option value="خدمات صيانة">خدمات صيانة</option>
-<option value="توصيل بريد/طرد">توصيل بريد/طرد</option>
-<option value="زيارة رسمية">زيارة رسمية</option>
-<option value="أخرى">أخرى</option>
-</select>
-</div>
-<div class="col-md-4">
-<label class="form-label">موعد مسبق؟</label>
-<select class="form-select" id="vAppt" name="appt">
-<option value="نعم">نعم</option>
-<option value="لا">لا</option>
-</select>
-</div>
-
-<div class="col-12">
-<label class="form-label">ملاحظات إضافية</label>
-<textarea class="form-control" id="vNotes" name="notes" rows="2"></textarea>
-</div>
-
-<div class="col-12 mt-4 d-flex justify-content-end gap-2">
-<button type="button" class="btn btn-outline-secondary px-4"
-onclick="document.getElementById('visitor-form').reset()">
-<i class="fas fa-undo ms-2"></i> مسح
-</button>
-<button type="button" class="btn btn-brand px-4" onclick="printBadge()">
-<i class="fas fa-id-badge ms-2"></i> طباعة تصريح
-</button>
-<button type="submit" class="btn btn-accent px-5">
-<i class="fas fa-save ms-2"></i> حفظ الدخول
-</button>
-</div>
-</div>
-</div>
-</form>
-</div>
-
-<!-- صفحة لوحة القيادة (ضع بداخلها الكروت + الرسوم + الجدول كما كانت عندك) -->
-<div id="dashboard-page" style="display:none;">
-<!-- stat cards + charts + table بنفس الكود السابق -->
-<!-- تأكد من وجود العناصر: statTotal, statToday, statTopDept, chartDept, chartTime, tableBody, searchBox -->
-</div>
-
-<!-- صفحة الإعدادات -->
-<div id="settings-page" style="display:none;">
-<!-- محتوى الإعدادات كما كان -->
-</div>
-</div>
+  </div><!-- نهاية main-content -->
 
 <script>
 // === المتغيرات والإعدادات ===
@@ -598,4 +592,5 @@ Swal.fire("خطأ اتصال", "تعذر الاتصال بالخادم، حاو�
 
 </body>
 </html>
+
 
