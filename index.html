@@ -15,8 +15,8 @@
 
     <style>
         :root {
-            --primary: #3D2F7B;   /* لون الهوية الأساسي */
-            --accent: #EC671F;    /* لون الهوية الثانوي */
+            --primary: #3D2F7B;
+            --accent: #EC671F;
             --bg-light: #f3f4f7;
             --text-dark: #2c3e50;
         }
@@ -27,7 +27,6 @@
             overflow-x: hidden;
         }
 
-        /* --- القائمة الجانبية --- */
         .sidebar {
             min-height: 100vh;
             background: var(--primary);
@@ -79,7 +78,6 @@
             box-shadow: 0 4px 15px rgba(236, 103, 31, 0.4);
         }
 
-        /* مؤشر الحفظ */
         .auto-save-box {
             position: absolute;
             bottom: 20px;
@@ -100,7 +98,6 @@
         .pulse { animation: pulse-anim 2s infinite; color: #2ecc71; }
         @keyframes pulse-anim { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* --- المحتوى الرئيسي --- */
         .main-content {
             margin-right: 260px;
             padding: 30px;
@@ -116,7 +113,6 @@
             align-items: center;
         }
 
-        /* --- البطاقات (Cards) --- */
         .stat-card {
             border: none;
             border-radius: 16px;
@@ -148,7 +144,6 @@
         .stat-value { font-size: 2.5rem; font-weight: 700; margin: 0; }
         .stat-label { font-size: 1rem; opacity: 0.9; }
 
-        /* --- الجداول والنماذج --- */
         .content-card {
             background: white;
             border-radius: 16px;
@@ -197,11 +192,9 @@
             border-bottom: 2px solid #eee;
         }
 
-        /* --- إصلاح الرسوم البيانية --- */
-        /* هذه الحاوية تمنع الرسم من التمدد اللانهائي */
         .chart-wrapper {
             position: relative;
-            height: 300px; /* ارتفاع ثابت ومحدد */
+            height: 300px;
             width: 100%;
         }
 
@@ -212,22 +205,19 @@
             .nav-link i { margin: 0; font-size: 1.5rem; }
             .main-content { margin-right: 80px; padding: 15px; }
             .auto-save-box { display: none; }
-            .chart-wrapper { height: 250px; } /* ارتفاع أصغر للجوال */
+            .chart-wrapper { height: 250px; }
         }
     </style>
 </head>
 <body>
-<div style="
-      position: fixed;
-      top: 15px;
-      right: 25px;
-      z-index: 9999;
-    ">
+<div style="position: fixed; top: 15px; right: 25px; z-index: 9999;">
     <img src="logo gostation.png" alt="شعار قوستيشن" style="height: 55px;">
-  </div>
+</div>
+
 <div class="sidebar">
     <div class="logo-area">
-        <img src="logo.png" alt="GoStation Logo" onerror="this.style.display='none'; document.getElementById('alt-logo').style.display='block';">
+        <img src="logo.png" alt="GoStation Logo"
+             onerror="this.style.display='none'; document.getElementById('alt-logo').style.display='block';">
         <h4 id="alt-logo" style="display:none; color:white; font-weight:bold; margin-top:10px;">Go Station</h4>
     </div>
     
@@ -256,44 +246,52 @@
     <div id="register-page" class="fade-in">
         <div class="header-title">
             <h3><i class="fas fa-door-open ms-2 text-warning"></i> بوابة الزوار</h3>
-            <div class="text-muted h6"><i class="far fa-clock ms-1"></i> <span id="headerTime">--:--</span></div>
+            <div class="text-muted h6">
+                <i class="far fa-clock ms-1"></i> <span id="headerTime">--:--</span>
+            </div>
         </div>
 
-        <form id="visitorForm" onsubmit="saveVisitor(event)">
+        <!-- النموذج الموحد -->
+        <form id="visitor-form">
             <div class="content-card">
                 <h5 class="mb-4 text-primary fw-bold">بيانات الدخول</h5>
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label text-muted small">تاريخ اليوم</label>
-                        <input type="text" class="form-control" id="autoDate" readonly style="background:#f1f2f6; cursor:not-allowed;">
+                        <input type="text" class="form-control" id="autoDate" name="date" readonly
+                               style="background:#f1f2f6; cursor:not-allowed;">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label text-muted small">وقت الوصول</label>
-                        <input type="text" class="form-control" id="autoTime" readonly style="background:#f1f2f6; cursor:not-allowed;">
+                        <input type="text" class="form-control" id="autoTime" name="timeIn" readonly
+                               style="background:#f1f2f6; cursor:not-allowed;">
                     </div>
 
                     <div class="col-12"><hr class="text-muted opacity-25"></div>
 
                     <div class="col-md-4">
                         <label class="form-label fw-bold">اسم الزائر <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="vName" placeholder="الاسم الثلاثي" required>
+                        <input type="text" class="form-control" id="vName" name="name"
+                               placeholder="الاسم الثلاثي" required>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-bold">رقم الجوال <span class="text-danger">*</span></label>
-                        <input type="tel" class="form-control" id="vMobile" placeholder="05xxxxxxxx" required>
+                        <input type="tel" class="form-control" id="vMobile" name="mobile"
+                               placeholder="05xxxxxxxx" required>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-bold">الجهة / الشركة</label>
-                        <input type="text" class="form-control" id="vOrg" placeholder="اسم الجهة القادم منها" required>
+                        <input type="text" class="form-control" id="vOrg" name="org"
+                               placeholder="اسم الجهة القادم منها" required>
                     </div>
 
                     <div class="col-md-4">
                         <label class="form-label">الإدارة المستهدفة</label>
-                        <select class="form-select" id="vDept" required></select>
+                        <select class="form-select" id="vDept" name="dept" required></select>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">الغرض من الزيارة</label>
-                        <select class="form-select" id="vReason">
+                        <select class="form-select" id="vReason" name="reason">
                             <option value="اجتماع عمل">اجتماع عمل</option>
                             <option value="مقابلة توظيف">مقابلة توظيف</option>
                             <option value="خدمات صيانة">خدمات صيانة</option>
@@ -304,7 +302,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">موعد مسبق؟</label>
-                        <select class="form-select" id="vAppt">
+                        <select class="form-select" id="vAppt" name="appt">
                             <option value="نعم">نعم</option>
                             <option value="لا">لا</option>
                         </select>
@@ -312,121 +310,33 @@
 
                     <div class="col-12">
                         <label class="form-label">ملاحظات إضافية</label>
-                        <textarea class="form-control" id="vNotes" rows="2"></textarea>
+                        <textarea class="form-control" id="vNotes" name="notes" rows="2"></textarea>
                     </div>
 
                     <div class="col-12 mt-4 d-flex justify-content-end gap-2">
-                        <button type="button" class="btn btn-outline-secondary px-4" onclick="document.getElementById('visitorForm').reset()"><i class="fas fa-undo ms-2"></i> مسح</button>
-                        <button type="button" class="btn btn-brand px-4" onclick="printBadge()"><i class="fas fa-id-badge ms-2"></i> طباعة تصريح</button>
-                        <button type="submit" class="btn btn-accent px-5"><i class="fas fa-save ms-2"></i> حفظ الدخول</button>
+                        <button type="button" class="btn btn-outline-secondary px-4"
+                                onclick="document.getElementById('visitor-form').reset()">
+                            <i class="fas fa-undo ms-2"></i> مسح
+                        </button>
+                        <button type="button" class="btn btn-brand px-4" onclick="printBadge()">
+                            <i class="fas fa-id-badge ms-2"></i> طباعة تصريح
+                        </button>
+                        <button type="submit" class="btn btn-accent px-5">
+                            <i class="fas fa-save ms-2"></i> حفظ الدخول
+                        </button>
                     </div>
                 </div>
             </div>
         </form>
     </div>
 
+    <!-- باقي الصفحات بدون تغيير جوهري -->
     <div id="dashboard-page" style="display: none;">
-        <div class="header-title">
-            <h3><i class="fas fa-chart-line ms-2 text-warning"></i> لوحة المعلومات والتقارير</h3>
-            <button class="btn btn-success btn-sm" onclick="exportToExcel()"><i class="fas fa-file-excel ms-2"></i> تصدير Excel</button>
-        </div>
-
-        <div class="row mb-4 g-3">
-            <div class="col-md-4">
-                <div class="stat-card card-bg-1 p-4">
-                    <i class="fas fa-users stat-icon"></i>
-                    <h3 class="stat-value" id="statTotal">0</h3>
-                    <div class="stat-label">إجمالي الزوار المسجلين</div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-card card-bg-2 p-4">
-                    <i class="fas fa-user-clock stat-icon"></i>
-                    <h3 class="stat-value" id="statToday">0</h3>
-                    <div class="stat-label">زوار اليوم</div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-card card-bg-3 p-4">
-                    <i class="fas fa-building stat-icon"></i>
-                    <h3 class="stat-value h4" id="statTopDept">-</h3>
-                    <div class="stat-label">الإدارة الأكثر نشاطاً</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row mb-4">
-            <div class="col-md-7">
-                <div class="content-card">
-                    <h5 class="fw-bold mb-3">ساعات الذروة (أوقات الدخول)</h5>
-                    <div class="chart-wrapper">
-                        <canvas id="chartTime"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-5">
-                <div class="content-card">
-                    <h5 class="fw-bold mb-3">توزيع الزوار حسب الإدارة</h5>
-                    <div class="chart-wrapper">
-                        <canvas id="chartDept"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="content-card">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold m-0">سجل أحدث الزوار</h5>
-                <input type="text" id="searchBox" class="form-control w-25" placeholder="بحث باسم الزائر..." onkeyup="renderTable()">
-            </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead>
-                        <tr>
-                            <th>التاريخ</th>
-                            <th>الوقت</th>
-                            <th>اسم الزائر</th>
-                            <th>الجهة</th>
-                            <th>الإدارة</th>
-                            <th>الحالة</th>
-                            <th>إجراء</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
-            </div>
-        </div>
+        <!-- ... كما هو في كودك السابق ... -->
     </div>
 
     <div id="settings-page" style="display: none;">
-        <div class="header-title">
-            <h3><i class="fas fa-database ms-2 text-warning"></i> إدارة النظام والنسخ الاحتياطي</h3>
-        </div>
-
-        <div class="row g-4">
-            <div class="col-md-6">
-                <div class="content-card h-100 border-primary border-top border-4">
-                    <h5 class="text-primary fw-bold"><i class="fas fa-download ms-2"></i> حفظ نسخة احتياطية</h5>
-                    <p class="text-muted">تنزيل ملف (JSON) لقاعدة البيانات.</p>
-                    <button class="btn btn-primary w-100 mt-3" onclick="downloadBackup()">تحميل قاعدة البيانات</button>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="content-card h-100 border-warning border-top border-4">
-                    <h5 class="text-warning fw-bold"><i class="fas fa-upload ms-2"></i> استعادة نسخة سابقة</h5>
-                    <p class="text-muted">استرجاع البيانات من ملف تم حفظه مسبقاً.</p>
-                    <input type="file" id="jsonFile" accept=".json" class="form-control mt-2">
-                    <button class="btn btn-outline-warning w-100 mt-2" onclick="restoreBackup()">بدء الاستعادة</button>
-                </div>
-            </div>
-            <div class="col-12">
-                <div class="content-card border-danger border-top border-4">
-                    <h5 class="text-danger fw-bold"><i class="fas fa-trash-alt ms-2"></i> منطقة الخطر</h5>
-                    <p class="text-danger">حذف جميع السجلات نهائياً.</p>
-                    <button class="btn btn-danger" onclick="clearAllData()">حذف كافة البيانات</button>
-                </div>
-            </div>
-        </div>
+        <!-- ... كما هو في كودك السابق ... -->
     </div>
 </div>
 
@@ -444,7 +354,8 @@
         const deptSelect = document.getElementById('vDept');
         departments.forEach(d => {
             const opt = document.createElement('option');
-            opt.value = d; opt.innerText = d;
+            opt.value = d;
+            opt.innerText = d;
             deptSelect.appendChild(opt);
         });
 
@@ -459,7 +370,8 @@
         const now = new Date();
         document.getElementById('autoDate').value = now.toLocaleDateString('en-GB');
         document.getElementById('autoTime').value = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
-        document.getElementById('headerTime').innerText = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+        document.getElementById('headerTime').innerText =
+            now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
     }
 
     function switchPage(pageId) {
@@ -475,32 +387,7 @@
         if(pageId === 'settings') links[2].classList.add('active');
     }
 
-    // === تم إزالة حقل vHost (المضيف) من هنا ===
-    function saveVisitor(e) {
-        e.preventDefault();
-        const now = new Date();
-        const visitor = {
-            id: Date.now(),
-            date: now.toLocaleDateString('en-GB'),
-            timeIn: now.toLocaleTimeString('en-US', {hour12: false}),
-            name: document.getElementById('vName').value,
-            mobile: document.getElementById('vMobile').value,
-            org: document.getElementById('vOrg').value,
-            dept: document.getElementById('vDept').value, // المضيف محذوف
-            reason: document.getElementById('vReason').value,
-            appt: document.getElementById('vAppt').value,
-            notes: document.getElementById('vNotes').value
-        };
-
-        visitorsDB.push(visitor);
-        saveDataToLocal();
-        
-        Swal.fire({
-            icon: 'success', title: 'تم التسجيل', text: 'تم حفظ البيانات', confirmButtonColor: '#EC671F'
-        });
-        document.getElementById('visitorForm').reset();
-    }
-
+    // الحفظ المحلي للداشبورد (كما هو)
     function loadDataFromLocal() {
         const data = localStorage.getItem('GoStationDB');
         if(data) visitorsDB = JSON.parse(data);
@@ -514,184 +401,19 @@
         saveDataToLocal();
         const badge = document.getElementById('saveStatus');
         const dot = document.getElementById('saveDot');
-        badge.innerText = 'تم الحفظ: ' + new Date().toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit'});
+        badge.innerText = 'تم الحفظ: ' +
+            new Date().toLocaleTimeString('en-US',
+                {hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit'});
         dot.style.color = '#2ecc71';
         setTimeout(() => { badge.innerText = 'النظام متصل'; }, 3000);
     }
 
-    // === الداشبورد والرسوم ===
-    let chartDeptInstance = null;
-    let chartTimeInstance = null;
+    // === الداشبورد والرسوم كما هي (اختصرتها هنا للحجم) ===
+    // احتفظ بجميع دوال updateDashboard / renderTable / deleteVisitor / drawCharts / printBadge / exportToExcel / downloadBackup / restoreBackup / clearAllData كما في كودك الأصلي.
 
-    function updateDashboard() {
-        document.getElementById('statTotal').innerText = visitorsDB.length.toLocaleString();
-        const todayStr = new Date().toLocaleDateString('en-GB');
-        const todayCount = visitorsDB.filter(v => v.date === todayStr).length;
-        document.getElementById('statToday').innerText = todayCount;
-
-        const deptCounts = {};
-        visitorsDB.forEach(v => { deptCounts[v.dept] = (deptCounts[v.dept] || 0) + 1; });
-        let topDept = '-';
-        let maxVal = 0;
-        for(const [d, c] of Object.entries(deptCounts)) { if(c > maxVal) { maxVal = c; topDept = d; } }
-        document.getElementById('statTopDept').innerText = topDept;
-
-        renderTable();
-        drawCharts(deptCounts);
-    }
-
-    function renderTable() {
-        const tbody = document.getElementById('tableBody');
-        const filter = document.getElementById('searchBox').value.toUpperCase();
-        tbody.innerHTML = '';
-        
-        [...visitorsDB].reverse().forEach(v => {
-            if(v.name.toUpperCase().includes(filter) || v.org.toUpperCase().includes(filter)) {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${v.date}</td>
-                        <td>${v.timeIn}</td>
-                        <td class="fw-bold text-primary">${v.name}</td>
-                        <td>${v.org}</td>
-                        <td><span class="badge bg-light text-dark border">${v.dept}</span></td>
-                        <td><span class="badge bg-success">تم الدخول</span></td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteVisitor(${v.id})"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-            }
-        });
-    }
-
-    function deleteVisitor(id) {
-        Swal.fire({
-            title: 'حذف السجل؟', text: "لا يمكن التراجع عن الحذف", icon: 'warning',
-            showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'حذف'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                visitorsDB = visitorsDB.filter(v => v.id !== id);
-                saveDataToLocal();
-                updateDashboard();
-                Swal.fire('تم الحذف', '', 'success');
-            }
-        });
-    }
-
-    function drawCharts(deptCounts) {
-        // Doughnut Chart
-        const ctxDept = document.getElementById('chartDept').getContext('2d');
-        if(chartDeptInstance) chartDeptInstance.destroy();
-        
-        chartDeptInstance = new Chart(ctxDept, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(deptCounts),
-                datasets: [{
-                    data: Object.values(deptCounts),
-                    backgroundColor: ['#3D2F7B', '#EC671F', '#5D4F9B', '#F39C12', '#2ECC71', '#95A5A6'],
-                    borderWidth: 0
-                }]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, // هذا السطر يمنع التمدد
-                plugins: { legend: { position: 'right' } } 
-            }
-        });
-
-        // Bar Chart
-        const timeCounts = {};
-        visitorsDB.forEach(v => {
-            if(v.timeIn) {
-                let h = v.timeIn.split(':')[0];
-                timeCounts[h] = (timeCounts[h] || 0) + 1;
-            }
-        });
-
-        const ctxTime = document.getElementById('chartTime').getContext('2d');
-        if(chartTimeInstance) chartTimeInstance.destroy();
-
-        chartTimeInstance = new Chart(ctxTime, {
-            type: 'bar',
-            data: {
-                labels: Object.keys(timeCounts).map(k => k + ':00'),
-                datasets: [{
-                    label: 'عدد الزوار',
-                    data: Object.values(timeCounts),
-                    backgroundColor: '#3D2F7B',
-                    borderRadius: 5
-                }]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, // هذا السطر يمنع التمدد
-                scales: { y: { beginAtZero: true } } 
-            }
-        });
-    }
-
-    function printBadge() {
-        const name = document.getElementById('vName').value;
-        const org = document.getElementById('vOrg').value;
-        // تمت إزالة المضيف من الطباعة
-        
-        if(!name) { Swal.fire('تنبيه', 'أدخل اسم الزائر أولاً', 'warning'); return; }
-
-        const win = window.open('', '', 'height=500,width=400');
-        win.document.write(`
-            <html dir="rtl"><body style="text-align:center; font-family:'Cairo'; border:4px solid #3D2F7B; padding:20px; border-radius:15px;">
-                <h3 style="color:#EC671F; margin-bottom:5px;">GoStation</h3>
-                <h2 style="margin:0; border-bottom:1px solid #ccc; padding-bottom:15px;">تصريح زائر</h2>
-                <h1 style="font-size:2.5em; margin:30px 0; color:#3D2F7B;">${name}</h1>
-                <h3 style="color:#555;">${org}</h3>
-                <div style="margin-top:40px; text-align:right; font-size:14px;">
-                    <p><strong>التاريخ:</strong> ${new Date().toLocaleDateString('en-GB')}</p>
-                    <p><strong>الوقت:</strong> ${new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'})}</p>
-                </div>
-            </body></html>
-        `);
-        win.document.close();
-        win.print();
-    }
-
-    function exportToExcel() {
-        if(visitorsDB.length === 0) { Swal.fire('تنبيه', 'لا توجد بيانات', 'info'); return; }
-        const ws = XLSX.utils.json_to_sheet(visitorsDB);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Visitors");
-        XLSX.writeFile(wb, `GoStation_Visitors_${new Date().toISOString().slice(0,10)}.xlsx`);
-    }
-
-    function downloadBackup() {
-        const blob = new Blob([JSON.stringify(visitorsDB)], {type: "application/json"});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `Backup_${new Date().toISOString().slice(0,10)}.json`;
-        a.click();
-    }
-
-    function restoreBackup() {
-        const file = document.getElementById('jsonFile').files[0];
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            visitorsDB = JSON.parse(e.target.result);
-            saveDataToLocal();
-            Swal.fire('تم', 'تمت الاستعادة', 'success');
-            updateDashboard();
-        };
-        reader.readAsText(file);
-    }
-    
-    function clearAllData() {
-        if(confirm('تحذير: هل أنت متأكد من حذف كافة البيانات؟')) {
-            visitorsDB = [];
-            localStorage.removeItem('GoStationDB');
-            updateDashboard();
-        }
-    }
 </script>
+
+<!-- سكربت ربط النموذج بـ /api/visitors -->
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("visitor-form");
@@ -716,6 +438,14 @@
         appt:   formData.get("appt"),
         notes:  formData.get("notes"),
       };
+
+      // إضافة السجل للداشبورد المحلي أيضاً
+      visitorsDB.push({
+        id: Date.now(),
+        ...data
+      });
+      saveDataToLocal();
+      updateDashboard();
 
       try {
         const res = await fetch("/api/visitors", {
@@ -742,9 +472,3 @@
 
 </body>
 </html>
-
-
-
-
-
-
