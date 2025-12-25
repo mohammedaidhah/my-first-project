@@ -439,13 +439,17 @@
         notes:  formData.get("notes"),
       };
 
-      // إضافة السجل للداشبورد المحلي أيضاً
+      // تحديث الداشبورد والـ localStorage محليًا
       visitorsDB.push({
         id: Date.now(),
         ...data
       });
-      saveDataToLocal();
-      updateDashboard();
+      if (typeof saveDataToLocal === "function") {
+        saveDataToLocal();
+      }
+      if (typeof updateDashboard === "function") {
+        updateDashboard();
+      }
 
       try {
         const res = await fetch("/api/visitors", {
@@ -470,5 +474,7 @@
   });
 </script>
 
+
 </body>
 </html>
+
