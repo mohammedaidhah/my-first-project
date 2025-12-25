@@ -526,6 +526,194 @@ document.getElementById('statTopDept').innerText = topDept;
 renderTable();
 drawCharts(deptCounts);
 }
+<script>
+  // ... نفس الكود الموجود عندك حتى نهاية updateDashboard()
+
+  function renderTable() {
+    const tbody = document.getElementById('tableBody');
+    if (!tbody) return;
+
+    const filterInput = document.getElementById('searchBox');
+    const filter = filterInput ? filterInput.value.toUpperCase() : '';
+
+    tbody.innerHTML = '';
+
+    [...visitorsDB].reverse().forEach(v => {
+      if (
+        !filter ||
+        v.name.toUpperCase().includes(filter) ||
+        v.org.toUpperCase().includes(filter)
+      ) {
+        const row = `
+          <tr>
+            <td>${v.date || ''}</td>
+            <td>${v.timeIn || ''}</td>
+            <td class="fw-bold text-primary">${v.name || ''}</td>
+            <td>${v.org || ''}</td>
+            <td><span class="badge bg-light text-dark border">${v.dept || ''}</span></td>
+            <td><span class="badge bg-success">تم الدخول</span></td>
+            <td>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteVisitor(${v.id})">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>`;
+        tbody.insertAdjacentHTML('beforeend', row);
+      }
+    });
+  }
+
+  function deleteVisitor(id) {
+    Swal.fire({
+      title: 'حذف السجل؟',
+      text: 'لا يمكن التراجع عن الحذف',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'حذف'
+    }).then(result => {
+      if (result.isConfirmed) {
+        visitorsDB = visitorsDB.filter(v => v.id !== id);
+        saveDataToLocal();
+        updateDashboard();
+        Swal.fire('تم الحذف', '', 'success');
+      }
+    });
+  }
+
+  let chartDeptInstance = null;
+  let chartTimeInstance = null;
+
+  function drawCharts(deptCounts) {
+    // مخطط الإدارات
+    const deptCanvas = document.getElementById('chartDept');
+    if (deptCanvas) {
+      const ctxDept = deptCanvas.getContext('2d');
+      if (chartDeptInstance) chartDeptInstance.destroy();
+
+      chartDeptInstance = new Chart(ctxDept, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(deptCounts),
+          datasets: [{
+            data: Object.values(deptCounts),
+            backgroundColor: ['#3D2F7B', '#EC671F', '#5D4F9B', '#F39C12', '#2ECC71', '#95A5A6'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'right' } }
+        }
+      });
+    }
+
+    // تجميع أوقات الدخول بالساعات
+    const timeCounts = {};
+    visitorsDB.forEach(v => {
+      if (v.timeIn) {
+        const h = v.timeIn.split(':')[0];
+        timeCounts[h] = (timeCounts[h] || 0) + 1;
+      }
+    });
+
+    const timeCanvas = document.getElementById('chartTime');
+    if (timeCanvas) {
+      const ctxTime = timeCanvas.getContext('2d');
+      if (chartTimeInstance) chartTimeInstance.destroy();
+
+      chartTimeInstance = new Chart(ctxTime, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(timeCounts).map(h => h + ':00'),
+          datasets: [{
+            label: 'عدد الزوار',
+            data: Object.values(timeCounts),
+            backgroundColor: '#3D2F7B',
+            borderRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+  }
+
+  function printBadge() {
+    const name = document.getElementById('vName').value;
+    const org  = document.getElementById('vOrg').value;
+
+    if (!name) {
+      Swal.fire('تنبيه', 'أدخل اسم الزائر أولاً', 'warning');
+      return;
+    }
+
+    const win = window.open('', '', 'height=500,width=400');
+    win.document.write(`
+      <html dir="rtl">
+        <body style="text-align:center; font-family:'Cairo';
+                     border:4px solid #3D2F7B; padding:20px; border-radius:15px;">
+          <h3 style="color:#EC671F; margin-bottom:5px;">GoStation</h3>
+          <h2 style="margin:0; border-bottom:1px solid #ccc; padding-bottom:15px;">تصريح زائر</h2>
+          <h1 style="font-size:2.5em; margin:30px 0; color:#3D2F7B;">${name}</h1>
+          <h3 style="color:#555;">${org}</h3>
+          <div style="margin-top:40px; text-align:right; font-size:14px;">
+            <p><strong>التاريخ:</strong> ${new Date().toLocaleDateString('en-GB')}</p>
+            <p><strong>الوقت:</strong> ${new Date().toLocaleTimeString('en-US',
+                {hour:'2-digit', minute:'2-digit'})}</p>
+          </div>
+        </body>
+      </html>
+    `);
+    win.document.close();
+    win.print();
+  }
+
+  function exportToExcel() {
+    if (visitorsDB.length === 0) {
+      Swal.fire('تنبيه', 'لا توجد بيانات', 'info');
+      return;
+    }
+    const ws = XLSX.utils.json_to_sheet(visitorsDB);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Visitors');
+    XLSX.writeFile(wb, `GoStation_Visitors_${new Date().toISOString().slice(0,10)}.xlsx`);
+  }
+
+  function downloadBackup() {
+    const blob = new Blob([JSON.stringify(visitorsDB)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `Backup_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+  }
+
+  function restoreBackup() {
+    const file = document.getElementById('jsonFile').files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      visitorsDB = JSON.parse(e.target.result || '[]');
+      saveDataToLocal();
+      Swal.fire('تم', 'تمت الاستعادة', 'success');
+      updateDashboard();
+    };
+    reader.readAsText(file);
+  }
+
+  function clearAllData() {
+    if (confirm('تحذير: هل أنت متأكد من حذف كافة البيانات؟')) {
+      visitorsDB = [];
+      localStorage.removeItem('GoStationDB');
+      updateDashboard();
+    }
+  }
+</script>
 
 // === بقية دوال الداشبورد (انسخها من نسختك السابقة كما هي): renderTable, deleteVisitor, drawCharts, printBadge, exportToExcel, downloadBackup, restoreBackup, clearAllData ===
 </script>
@@ -592,5 +780,6 @@ Swal.fire("خطأ اتصال", "تعذر الاتصال بالخادم، حاو�
 
 </body>
 </html>
+
 
 
