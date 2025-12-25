@@ -220,7 +220,123 @@ onerror="this.style.display='none'; document.getElementById('alt-logo').style.di
 </div>
 </div>
 
-<div class="main-content">
+  <!-- صفحة لوحة القيادة -->
+  <div id="dashboard-page" style="display:none;">
+    <div class="header-title">
+        <h3><i class="fas fa-chart-line ms-2 text-warning"></i> لوحة المعلومات والتقارير</h3>
+        <button class="btn btn-success btn-sm" onclick="exportToExcel()">
+            <i class="fas fa-file-excel ms-2"></i> تصدير Excel
+        </button>
+    </div>
+
+    <div class="row mb-4 g-3">
+        <div class="col-md-4">
+            <div class="stat-card card-bg-1 p-4">
+                <i class="fas fa-users stat-icon"></i>
+                <h3 class="stat-value" id="statTotal">0</h3>
+                <div class="stat-label">إجمالي الزوار المسجلين</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card card-bg-2 p-4">
+                <i class="fas fa-user-clock stat-icon"></i>
+                <h3 class="stat-value" id="statToday">0</h3>
+                <div class="stat-label">زوار اليوم</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card card-bg-3 p-4">
+                <i class="fas fa-building stat-icon"></i>
+                <h3 class="stat-value h4" id="statTopDept">-</h3>
+                <div class="stat-label">الإدارة الأكثر نشاطاً</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-7">
+            <div class="content-card">
+                <h5 class="fw-bold mb-3">ساعات الذروة (أوقات الدخول)</h5>
+                <div class="chart-wrapper">
+                    <canvas id="chartTime"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="content-card">
+                <h5 class="fw-bold mb-3">توزيع الزوار حسب الإدارة</h5>
+                <div class="chart-wrapper">
+                    <canvas id="chartDept"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold m-0">سجل أحدث الزوار</h5>
+            <input type="text" id="searchBox" class="form-control w-25"
+                   placeholder="بحث باسم الزائر..." onkeyup="renderTable()">
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>الوقت</th>
+                        <th>اسم الزائر</th>
+                        <th>الجهة</th>
+                        <th>الإدارة</th>
+                        <th>الحالة</th>
+                        <th>إجراء</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+  </div>
+
+  <!-- صفحة الإعدادات -->
+  <div id="settings-page" style="display:none;">
+    <div class="header-title">
+        <h3><i class="fas fa-database ms-2 text-warning"></i> إدارة النظام والنسخ الاحتياطي</h3>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="content-card h-100 border-primary border-top border-4">
+                <h5 class="text-primary fw-bold">
+                    <i class="fas fa-download ms-2"></i> حفظ نسخة احتياطية
+                </h5>
+                <p class="text-muted">تنزيل ملف (JSON) لقاعدة البيانات.</p>
+                <button class="btn btn-primary w-100 mt-3"
+                        onclick="downloadBackup()">تحميل قاعدة البيانات</button>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="content-card h-100 border-warning border-top border-4">
+                <h5 class="text-warning fw-bold">
+                    <i class="fas fa-upload ms-2"></i> استعادة نسخة سابقة
+                </h5>
+                <p class="text-muted">استرجاع البيانات من ملف تم حفظه مسبقاً.</p>
+                <input type="file" id="jsonFile" accept=".json" class="form-control mt-2">
+                <button class="btn btn-outline-warning w-100 mt-2"
+                        onclick="restoreBackup()">بدء الاستعادة</button>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="content-card border-danger border-top border-4">
+                <h5 class="text-danger fw-bold">
+                    <i class="fas fa-trash-alt ms-2"></i> منطقة الخطر
+                </h5>
+                <p class="text-danger">حذف جميع السجلات نهائياً.</p>
+                <button class="btn btn-danger" onclick="clearAllData()">حذف كافة البيانات</button>
+            </div>
+        </div>
+    </div>
+  </div>
+
 <!-- صفحة التسجيل -->
 <div id="register-page" class="fade-in">
 <div class="header-title">
@@ -482,3 +598,4 @@ Swal.fire("خطأ اتصال", "تعذر الاتصال بالخادم، حاو�
 
 </body>
 </html>
+
