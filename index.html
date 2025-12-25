@@ -188,10 +188,12 @@
   </style>
 </head>
 <body>
+  <!-- الشعار -->
   <div style="position: fixed; top: 15px; right: 25px; z-index: 9999;">
     <img src="logo gostation.png" alt="شعار قوستيشن" style="height: 55px;">
   </div>
 
+  <!-- الشريط الجانبي -->
   <div class="sidebar">
     <div class="logo-area">
       <img src="logo.png" alt="GoStation Logo"
@@ -219,6 +221,7 @@
     </div>
   </div>
 
+  <!-- المحتوى الرئيسي -->
   <div class="main-content">
     <!-- صفحة التسجيل -->
     <div id="register-page" class="fade-in">
@@ -425,7 +428,7 @@
     </div>
   </div>
 
-  <!-- سكربت الداشبورد -->
+  <!-- سكربت الداشبورد + جلب البيانات من API -->
   <script>
     let visitorsDB = [];
     const departments = [
@@ -446,10 +449,27 @@
 
       updateDateTime();
       setInterval(updateDateTime, 1000);
-      loadDataFromLocal();
+
+      // بدّلنا من localStorage إلى الخادم
+      loadDataFromServer();
+
       setInterval(autoSaveProcess, 10000);
-      updateDashboard();
     });
+
+    async function loadDataFromServer() {
+      try {
+        const res = await fetch('/api/visitors');
+        const data = await res.json();
+        visitorsDB = Array.isArray(data) ? data : [];
+        console.log('[loadDataFromServer] length:', visitorsDB.length);
+        updateDashboard();
+      } catch (err) {
+        console.error('[loadDataFromServer] error:', err);
+        // في حال الفشل يمكن الرجوع لنسخة localStorage القديمة (اختياري)
+        loadDataFromLocal();
+        updateDashboard();
+      }
+    }
 
     function updateDateTime() {
       const now = new Date();
@@ -489,6 +509,7 @@
     }
 
     function autoSaveProcess() {
+      // اختياري: تستمر في حفظ نسخة محلية احتياطية
       saveDataToLocal();
       const badge = document.getElementById('saveStatus');
       const dot = document.getElementById('saveDot');
@@ -553,7 +574,7 @@
               <td><span class="badge bg-light text-dark border">${v.dept || ''}</span></td>
               <td><span class="badge bg-success">تم الدخول</span></td>
               <td>
-                <button class="btn btn-sm btn-outline-danger" onclick="deleteVisitor(${v.id})">
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteVisitor('${v._id || v.id}')">
                   <i class="fas fa-trash"></i>
                 </button>
               </td>
@@ -571,9 +592,15 @@
         showCancelButton: true,
         confirmButtonColor: '#d33',
         confirmButtonText: 'حذف'
-      }).then(result => {
+      }).then(async result => {
         if (result.isConfirmed) {
-          visitorsDB = visitorsDB.filter(v => v.id !== id);
+          try {
+            // حذف من الخادم (يفترض وجود DELETE /api/visitors/:id)
+            await fetch(`/api/visitors/${id}`, { method: 'DELETE' });
+          } catch (err) {
+            console.error('[deleteVisitor] delete from API error:', err);
+          }
+          visitorsDB = visitorsDB.filter(v => (v._id || v.id) !== id);
           saveDataToLocal();
           updateDashboard();
           Swal.fire('تم الحذف', '', 'success');
@@ -777,17 +804,6 @@
           notes: formData.get("notes"),
         };
 
-        visitorsDB.push({
-          id: Date.now(),
-          ...data
-        });
-        if (typeof saveDataToLocal === "function") {
-          saveDataToLocal();
-        }
-        if (typeof updateDashboard === "function") {
-          updateDashboard();
-        }
-
         try {
           const res = await fetch("/api/visitors", {
             method: "POST",
@@ -796,15 +812,19 @@
           });
 
           const result = await res.json();
+          console.log('[POST /api/visitors] response:', result);
 
           if (res.ok) {
             Swal.fire("تم الحفظ", "تم حفظ الزائر في النظام", "success");
             form.reset();
+
+            // بعد الحفظ من أي جهاز، نجلب البيانات من الخادم
+            await loadDataFromServer();
           } else {
             Swal.fire("خطأ", result.message || "حدث خطأ أثناء الحفظ", "error");
           }
         } catch (err) {
-          console.error(err);
+          console.error('[POST /api/visitors] error:', err);
           Swal.fire("خطأ اتصال", "تعذر الاتصال بالخادم، حاول مرة أخرى", "error");
         }
       });
