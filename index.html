@@ -321,7 +321,7 @@
 
   <!-- المحتوى الرئيسي -->
   <div class="main-content">
-    <!-- لوحة القيادة: إحصائيات ورسوم فقط -->
+    <!-- لوحة القيادة -->
     <div id="dashboard-page">
       <div class="header-title">
         <h3><i class="fas fa-chart-line ms-2 text-warning"></i> لوحة المعلومات والتقارير</h3>
@@ -371,7 +371,7 @@
       </div>
     </div>
 
-    <!-- صفحة التسجيل + سجل الزوار + زر التصدير -->
+    <!-- صفحة التسجيل -->
     <div id="register-page" class="fade-in" style="display:none;">
       <div class="header-title">
         <h3><i class="fas fa-door-open ms-2 text-warning"></i> بوابة الزوار</h3>
@@ -457,7 +457,7 @@
         </div>
       </form>
 
-      <!-- سجل الزوار + زر التصدير -->
+      <!-- سجل الزوار -->
       <div class="content-card">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h5 class="fw-bold m-0">سجل الزوار</h5>
@@ -559,7 +559,6 @@
     <span id="syncMessage"></span>
   </div>
 
-  <!-- سكربت الداشبورد + جلب البيانات من API -->
   <script>
     let visitorsDB = [];
     const departments = [
@@ -569,13 +568,12 @@
       "موارد بشرية", "النقليات", "الامتياز التجاري", "الشؤون القانونية", "الادارة المالية"
     ];
 
-    // إعدادات كلمات المرور (يمكنك تغييرها)
+    // إعدادات كلمات المرور
     const PASSWORD_CONFIG = {
       register: 'gostation123',
       settings: 'admin2025'
     };
 
-    // تتبع حالة الوصول
     let accessStatus = {
       register: false,
       settings: false
@@ -594,10 +592,8 @@
 
       updateDateTime();
       setInterval(updateDateTime, 1000);
-
       loadDataFromServer();
       setInterval(autoSaveProcess, 10000);
-
       checkSavedAccess();
     });
 
@@ -607,16 +603,12 @@
       messageEl.textContent = message;
       statusEl.className = `sync-status ${isError ? 'error' : ''}`;
       statusEl.style.display = 'block';
-      
-      setTimeout(() => {
-        statusEl.style.display = 'none';
-      }, 5000);
+      setTimeout(() => statusEl.style.display = 'none', 5000);
     }
 
     function checkSavedAccess() {
       const savedRegister = localStorage.getItem('registerAccess');
       const savedSettings = localStorage.getItem('settingsAccess');
-      
       if (savedRegister === 'true') {
         accessStatus.register = true;
         unlockPage('register');
@@ -635,9 +627,7 @@
 
     function unlockPage(page) {
       const link = document.getElementById(page + 'Link');
-      if (link) {
-        link.classList.remove('locked');
-      }
+      if (link) link.classList.remove('locked');
     }
 
     function checkPassword(page) {
@@ -695,7 +685,7 @@
       }
     });
 
-    // ✅ دالة محسنة لتحميل البيانات مع المزامنة
+    // تحميل البيانات من الخادم
     async function loadDataFromServer() {
       try {
         showSyncStatus('جاري تحميل البيانات...');
@@ -703,27 +693,23 @@
           method: 'GET',
           headers: { 'Cache-Control': 'no-cache' }
         });
-        
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        
         const data = await res.json();
         visitorsDB = Array.isArray(data) ? data : [];
-        
-        saveDataToLocal(); // حفظ محلي كاحتياطي
+        saveDataToLocal();
         updateDashboard();
         if (accessStatus.register) renderTable();
-        
-        showSyncStatus('تم تحميل البيانات بنجاح', false);
+        showSyncStatus('تم تحميل البيانات بنجاح');
       } catch (err) {
         console.error('[loadDataFromServer] error:', err);
-        showSyncStatus('فشل الاتصال بالخادم - استخدام البيانات المحلية', true);
+        showSyncStatus('فشل الاتصال - استخدام البيانات المحلية', true);
         loadDataFromLocal();
         updateDashboard();
         if (accessStatus.register) renderTable();
       }
     }
 
-    // ✅ دالة استعادة محسنة مع رفع لـ MongoDB
+    // استعادة النسخة الاحتياطية مع المزامنة
     async function restoreBackup() {
       if (!accessStatus.settings) {
         Swal.fire('غير مصرح', 'يجب تسجيل الدخول أولاً', 'warning');
@@ -747,15 +733,12 @@
       reader.onload = async (e) => {
         try {
           const parsed = JSON.parse(e.target.result || '[]');
-          if (!Array.isArray(parsed)) {
-            throw new Error('صيغة غير صحيحة');
-          }
+          if (!Array.isArray(parsed)) throw new Error('صيغة غير صحيحة');
 
-          // 1. حفظ محلياً
           visitorsDB = parsed;
           saveDataToLocal();
 
-          // 2. رفع كامل لـ MongoDB للمزامنة
+          // رفع لـ MongoDB للمزامنة
           const response = await fetch('/api/visitors/restore', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -780,8 +763,6 @@
               icon: 'success',
               confirmButtonText: 'حسناً'
             });
-            
-            // إعادة تحميل للتأكد من المزامنة
             await loadDataFromServer();
             updateDashboard();
             if (accessStatus.register) renderTable();
@@ -813,8 +794,7 @@
       if (dateInput) dateInput.value = now.toLocaleDateString('en-GB');
       if (timeInput) timeInput.value = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
       const headerTime = document.getElementById('headerTime');
-      if (headerTime) headerTime.innerText =
-        now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+      if (headerTime) headerTime.innerText = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
     }
 
     function switchPage(pageId) {
@@ -826,8 +806,8 @@
       const links = document.querySelectorAll('.nav-link');
       links.forEach(l => l.classList.remove('active'));
       if (pageId === 'dashboard') links[0].classList.add('active');
-      if (pageId === 'register')  links[1].classList.add('active');
-      if (pageId === 'settings')  links[2].classList.add('active');
+      if (pageId === 'register') links[1].classList.add('active');
+      if (pageId === 'settings') links[2].classList.add('active');
 
       if (pageId === 'dashboard') updateDashboard();
       if (pageId === 'register' && accessStatus.register) renderTable();
@@ -835,9 +815,7 @@
 
     function loadDataFromLocal() {
       const data = localStorage.getItem('GoStationDB');
-      if (data) {
-        visitorsDB = JSON.parse(data);
-      }
+      if (data) visitorsDB = JSON.parse(data);
     }
 
     function saveDataToLocal() {
@@ -849,9 +827,7 @@
       const badge = document.getElementById('saveStatus');
       const dot = document.getElementById('saveDot');
       if (badge && dot) {
-        badge.innerText = 'تم الحفظ: ' +
-          new Date().toLocaleTimeString('en-US',
-            {hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit'});
+        badge.innerText = 'تم الحفظ: ' + new Date().toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit'});
         dot.style.color = '#2ecc71';
         setTimeout(() => { badge.innerText = 'النظام متصل'; }, 3000);
       }
@@ -860,7 +836,6 @@
     function updateDashboard() {
       const totalEl = document.getElementById('statTotal');
       if (!totalEl) return;
-
       totalEl.innerText = visitorsDB.length.toLocaleString();
 
       const todayStr = new Date().toLocaleDateString('en-GB');
@@ -873,8 +848,7 @@
         deptCounts[v.dept] = (deptCounts[v.dept] || 0) + 1;
       });
 
-      let topDept = '-';
-      let maxVal = 0;
+      let topDept = '-', maxVal = 0;
       for (const [d, c] of Object.entries(deptCounts)) {
         if (c > maxVal) {
           maxVal = c;
@@ -882,27 +856,20 @@
         }
       }
       document.getElementById('statTopDept').innerText = topDept;
-
       drawCharts(deptCounts);
     }
 
     function renderTable() {
       if (!accessStatus.register) return;
-      
       const tbody = document.getElementById('tableBody');
       if (!tbody) return;
 
       const filterInput = document.getElementById('searchBox');
       const filter = filterInput ? filterInput.value.toUpperCase() : '';
-
       tbody.innerHTML = '';
 
       [...visitorsDB].reverse().forEach(v => {
-        if (
-          !filter ||
-          (v.name && v.name.toUpperCase().includes(filter)) ||
-          (v.org && v.org.toUpperCase().includes(filter))
-        ) {
+        if (!filter || (v.name && v.name.toUpperCase().includes(filter)) || (v.org && v.org.toUpperCase().includes(filter))) {
           const row = `
             <tr>
               <td>${v.date || ''}</td>
@@ -924,7 +891,6 @@
 
     async function deleteVisitor(id) {
       if (!accessStatus.register) return;
-      
       Swal.fire({
         title: 'حذف السجل؟',
         text: 'لا يمكن التراجع عن الحذف',
@@ -935,13 +901,10 @@
       }).then(async result => {
         if (result.isConfirmed) {
           try {
-            // حذف من MongoDB أولاً
             await fetch(`/api/visitors/${id}`, { method: 'DELETE' });
           } catch (err) {
-            console.error('[deleteVisitor] delete from API error:', err);
+            console.error('[deleteVisitor] error:', err);
           }
-          
-          // حذف محلياً
           visitorsDB = visitorsDB.filter(v => (v._id || v.id) !== id);
           saveDataToLocal();
           updateDashboard();
@@ -955,11 +918,11 @@
     let chartTimeInstance = null;
 
     function drawCharts(deptCounts) {
+      // رسم الإدارات
       const deptCanvas = document.getElementById('chartDept');
       if (deptCanvas) {
         const ctxDept = deptCanvas.getContext('2d');
         if (chartDeptInstance) chartDeptInstance.destroy();
-
         chartDeptInstance = new Chart(ctxDept, {
           type: 'doughnut',
           data: {
@@ -978,6 +941,7 @@
         });
       }
 
+      // رسم أوقات الذروة
       const timeCounts = {};
       visitorsDB.forEach(v => {
         if (v.timeIn) {
@@ -990,7 +954,6 @@
       if (timeCanvas) {
         const ctxTime = timeCanvas.getContext('2d');
         if (chartTimeInstance) chartTimeInstance.destroy();
-
         chartTimeInstance = new Chart(ctxTime, {
           type: 'bar',
           data: {
@@ -1013,26 +976,22 @@
 
     function printBadge() {
       const name = document.getElementById('vName')?.value;
-      const org  = document.getElementById('vOrg')?.value;
-
+      const org = document.getElementById('vOrg')?.value;
       if (!name) {
         Swal.fire('تنبيه', 'أدخل اسم الزائر أولاً', 'warning');
         return;
       }
-
       const win = window.open('', '', 'height=500,width=400');
       win.document.write(`
         <html dir="rtl">
-          <body style="text-align:center; font-family:'Cairo';
-                       border:4px solid #3D2F7B; padding:20px; border-radius:15px;">
+          <body style="text-align:center; font-family:'Cairo'; border:4px solid #3D2F7B; padding:20px; border-radius:15px;">
             <h3 style="color:#EC671F; margin-bottom:5px;">GoStation</h3>
             <h2 style="margin:0; border-bottom:1px solid #ccc; padding-bottom:15px;">تصريح زائر</h2>
             <h1 style="font-size:2.5em; margin:30px 0; color:#3D2F7B;">${name}</h1>
             <h3 style="color:#555;">${org || ''}</h3>
             <div style="margin-top:40px; text-align:right; font-size:14px;">
               <p><strong>التاريخ:</strong> ${new Date().toLocaleDateString('en-GB')}</p>
-              <p><strong>الوقت:</strong> ${new Date().toLocaleTimeString('en-US',
-                  {hour:'2-digit', minute:'2-digit'})}</p>
+              <p><strong>الوقت:</strong> ${new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'})}</p>
             </div>
           </body>
         </html>
@@ -1043,7 +1002,6 @@
 
     function exportToExcel() {
       if (!accessStatus.register) return;
-      
       if (visitorsDB.length === 0) {
         Swal.fire('تنبيه', 'لا توجد بيانات', 'info');
         return;
@@ -1056,7 +1014,6 @@
 
     function downloadBackup() {
       if (!accessStatus.settings) return;
-      
       const blob = new Blob([JSON.stringify(visitorsDB, null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
@@ -1067,7 +1024,6 @@
 
     function clearAllData() {
       if (!accessStatus.settings) return;
-      
       Swal.fire({
         title: 'تحذير خطير!',
         html: `
@@ -1090,18 +1046,13 @@
             allowOutsideClick: false,
             didOpen: () => Swal.showLoading()
           });
-
           try {
-            // حذف من MongoDB
             await fetch('/api/visitors/clear', { method: 'DELETE' });
           } catch (err) {
             console.error('Clear API error:', err);
           }
-
-          // حذف محلياً
           visitorsDB = [];
           localStorage.removeItem('GoStationDB');
-          
           Swal.fire('تم الحذف', 'تم حذف جميع البيانات نهائياً', 'success');
           updateDashboard();
           if (accessStatus.register) renderTable();
@@ -1109,7 +1060,7 @@
       });
     }
 
-    // سكربت ربط النموذج بـ /api/visitors
+    // نموذج التسجيل
     document.addEventListener("DOMContentLoaded", function () {
       const form = document.getElementById("visitor-form");
       if (!form) return;
@@ -1119,9 +1070,7 @@
           Swal.fire('غير مصرح', 'يجب تسجيل الدخول أولاً', 'warning');
           return;
         }
-
         e.preventDefault();
-
         const formData = new FormData(form);
         const data = {
           date: formData.get("date"),
@@ -1141,14 +1090,11 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
           });
-
           const result = await res.json();
-          console.log('[POST /api/visitors] response:', result);
-
           if (res.ok) {
             Swal.fire("تم الحفظ", "تم حفظ الزائر في النظام", "success");
             form.reset();
-            await loadDataFromServer(); // إعادة تحميل للمزامنة
+            await loadDataFromServer();
           } else {
             Swal.fire("خطأ", result.message || "حدث خطأ أثناء الحفظ", "error");
           }
