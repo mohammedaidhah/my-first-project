@@ -255,6 +255,24 @@
       display: inline-block;
     }
 
+    /* Sync Status */
+    .sync-status {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 1001;
+      background: rgba(46, 204, 113, 0.9);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-size: 0.85rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      display: none;
+    }
+    .sync-status.error {
+      background: rgba(231, 76, 60, 0.9);
+    }
+
     @media (max-width: 768px) {
       .sidebar { width: 80px; padding-top: 15px; }
       .sidebar .logo-area img { max-width: 60px; }
@@ -264,6 +282,7 @@
       .auto-save-box { display: none; }
       .chart-wrapper { height: 250px; }
       .password-card { padding: 30px 20px; margin: 20px; }
+      .sync-status { bottom: 10px; left: 10px; right: 10px; text-align: center; }
     }
   </style>
 </head>
@@ -491,10 +510,15 @@
             <h5 class="text-warning fw-bold">
               <i class="fas fa-upload ms-2"></i> استعادة نسخة سابقة
             </h5>
-            <p class="text-muted">استرجاع البيانات من ملف تم حفظه مسبقاً.</p>
+            <p class="text-muted mb-2">استرجاع البيانات من ملف تم حفظه مسبقاً.</p>
+            <p class="text-success small mb-2">
+              <i class="fas fa-sync-alt ms-1"></i> سيتم المزامنة مع MongoDB تلقائياً
+            </p>
             <input type="file" id="jsonFile" accept=".json" class="form-control mt-2">
             <button class="btn btn-outline-warning w-100 mt-2"
-                    onclick="restoreBackup()">بدء الاستعادة</button>
+                    onclick="restoreBackup()">
+              <i class="fas fa-sync ms-2"></i> بدء الاستعادة والمزامنة
+            </button>
           </div>
         </div>
         <div class="col-12">
@@ -503,7 +527,9 @@
               <i class="fas fa-trash-alt ms-2"></i> منطقة الخطر
             </h5>
             <p class="text-danger">حذف جميع السجلات نهائياً.</p>
-            <button class="btn btn-danger" onclick="clearAllData()">حذف كافة البيانات</button>
+            <button class="btn btn-danger" onclick="clearAllData()">
+              <i class="fas fa-bomb ms-2"></i> حذف كافة البيانات
+            </button>
           </div>
         </div>
       </div>
@@ -525,6 +551,12 @@
         </button>
       </div>
     </div>
+  </div>
+
+  <!-- مؤشر حالة المزامنة -->
+  <div id="syncStatus" class="sync-status">
+    <i class="fas fa-sync-alt fa-spin ms-1"></i>
+    <span id="syncMessage"></span>
   </div>
 
   <!-- سكربت الداشبورد + جلب البيانات من API -->
@@ -549,7 +581,6 @@
       settings: false
     };
 
-    // كلمة المرور الحالية المطلوبة
     let currentRequiredPage = '';
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -567,9 +598,20 @@
       loadDataFromServer();
       setInterval(autoSaveProcess, 10000);
 
-      // التحقق من الوصول المحفوظ
       checkSavedAccess();
     });
+
+    function showSyncStatus(message, isError = false) {
+      const statusEl = document.getElementById('syncStatus');
+      const messageEl = document.getElementById('syncMessage');
+      messageEl.textContent = message;
+      statusEl.className = `sync-status ${isError ? 'error' : ''}`;
+      statusEl.style.display = 'block';
+      
+      setTimeout(() => {
+        statusEl.style.display = 'none';
+      }, 5000);
+    }
 
     function checkSavedAccess() {
       const savedRegister = localStorage.getItem('registerAccess');
@@ -595,15 +637,6 @@
       const link = document.getElementById(page + 'Link');
       if (link) {
         link.classList.remove('locked');
-      }
-    }
-
-    function lockPage(page) {
-      accessStatus[page] = false;
-      localStorage.removeItem(page + 'Access');
-      const link = document.getElementById(page + 'Link');
-      if (link) {
-        link.classList.add('locked');
       }
     }
 
@@ -656,26 +689,121 @@
       }
     }
 
-    // السماح بالدخول بـ Enter
     document.addEventListener('keypress', function(e) {
       if (e.key === 'Enter' && document.getElementById('passwordModal').style.display === 'flex') {
         verifyPassword();
       }
     });
 
+    // ✅ دالة محسنة لتحميل البيانات مع المزامنة
     async function loadDataFromServer() {
       try {
-        const res = await fetch('/api/visitors');
+        showSyncStatus('جاري تحميل البيانات...');
+        const res = await fetch('/api/visitors', { 
+          method: 'GET',
+          headers: { 'Cache-Control': 'no-cache' }
+        });
+        
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        
         const data = await res.json();
         visitorsDB = Array.isArray(data) ? data : [];
+        
+        saveDataToLocal(); // حفظ محلي كاحتياطي
         updateDashboard();
         if (accessStatus.register) renderTable();
+        
+        showSyncStatus('تم تحميل البيانات بنجاح', false);
       } catch (err) {
         console.error('[loadDataFromServer] error:', err);
+        showSyncStatus('فشل الاتصال بالخادم - استخدام البيانات المحلية', true);
         loadDataFromLocal();
         updateDashboard();
         if (accessStatus.register) renderTable();
       }
+    }
+
+    // ✅ دالة استعادة محسنة مع رفع لـ MongoDB
+    async function restoreBackup() {
+      if (!accessStatus.settings) {
+        Swal.fire('غير مصرح', 'يجب تسجيل الدخول أولاً', 'warning');
+        return;
+      }
+      
+      const file = document.getElementById('jsonFile').files[0];
+      if (!file) {
+        Swal.fire('اختر ملف', 'يرجى اختيار ملف النسخة الاحتياطية', 'warning');
+        return;
+      }
+
+      Swal.fire({
+        title: 'جاري الاستعادة...',
+        text: 'سيتم رفع البيانات للمزامنة مع جميع المستخدمين',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result || '[]');
+          if (!Array.isArray(parsed)) {
+            throw new Error('صيغة غير صحيحة');
+          }
+
+          // 1. حفظ محلياً
+          visitorsDB = parsed;
+          saveDataToLocal();
+
+          // 2. رفع كامل لـ MongoDB للمزامنة
+          const response = await fetch('/api/visitors/restore', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              visitors: parsed,
+              action: 'replace_all'
+            })
+          });
+
+          const result = await response.json();
+
+          if (response.ok && result.success) {
+            Swal.fire({
+              title: 'تم الاستعادة بنجاح! ✅',
+              html: `
+                <div class="text-success">
+                  <p><i class="fas fa-check-circle ms-2"></i>تم تحديث ${parsed.length} سجل</p>
+                  <p><i class="fas fa-sync-alt ms-2"></i>تمت المزامنة مع MongoDB</p>
+                  <p class="text-primary"><strong>سيظهر لجميع المستخدمين فوراً</strong></p>
+                </div>
+              `,
+              icon: 'success',
+              confirmButtonText: 'حسناً'
+            });
+            
+            // إعادة تحميل للتأكد من المزامنة
+            await loadDataFromServer();
+            updateDashboard();
+            if (accessStatus.register) renderTable();
+            switchPage('dashboard');
+          } else {
+            throw new Error(result.message || 'فشل رفع البيانات');
+          }
+        } catch (err) {
+          console.error('[restoreBackup] error:', err);
+          Swal.fire({
+            title: 'خطأ في الاستعادة',
+            text: err.message || 'تعذر استعادة البيانات',
+            icon: 'error'
+          });
+        }
+      };
+
+      reader.onerror = () => {
+        Swal.fire('خطأ في الملف', 'تعذر قراءة ملف النسخة الاحتياطية', 'error');
+      };
+
+      reader.readAsText(file);
     }
 
     function updateDateTime() {
@@ -690,20 +818,17 @@
     }
 
     function switchPage(pageId) {
-      // إخفاء جميع الصفحات
       document.getElementById('register-page').style.display = 'none';
       document.getElementById('dashboard-page').style.display = 'none';
       document.getElementById('settings-page').style.display = 'none';
       document.getElementById(pageId + '-page').style.display = 'block';
 
-      // تحديث حالة الشريط الجانبي
       const links = document.querySelectorAll('.nav-link');
       links.forEach(l => l.classList.remove('active'));
       if (pageId === 'dashboard') links[0].classList.add('active');
       if (pageId === 'register')  links[1].classList.add('active');
       if (pageId === 'settings')  links[2].classList.add('active');
 
-      // تحديث المحتوى
       if (pageId === 'dashboard') updateDashboard();
       if (pageId === 'register' && accessStatus.register) renderTable();
     }
@@ -797,7 +922,7 @@
       });
     }
 
-    function deleteVisitor(id) {
+    async function deleteVisitor(id) {
       if (!accessStatus.register) return;
       
       Swal.fire({
@@ -810,10 +935,13 @@
       }).then(async result => {
         if (result.isConfirmed) {
           try {
+            // حذف من MongoDB أولاً
             await fetch(`/api/visitors/${id}`, { method: 'DELETE' });
           } catch (err) {
             console.error('[deleteVisitor] delete from API error:', err);
           }
+          
+          // حذف محلياً
           visitorsDB = visitorsDB.filter(v => (v._id || v.id) !== id);
           saveDataToLocal();
           updateDashboard();
@@ -929,46 +1057,12 @@
     function downloadBackup() {
       if (!accessStatus.settings) return;
       
-      const blob = new Blob([JSON.stringify(visitorsDB)], { type: 'application/json' });
+      const blob = new Blob([JSON.stringify(visitorsDB, null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `Backup_${new Date().toISOString().slice(0,10)}.json`;
+      a.download = `GoStation_Backup_${new Date().toISOString().slice(0,10)}.json`;
       a.click();
-    }
-
-    function restoreBackup() {
-      if (!accessStatus.settings) return;
-      
-      const file = document.getElementById('jsonFile').files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = e => {
-        try {
-          const parsed = JSON.parse(e.target.result || '[]');
-          if (!Array.isArray(parsed)) {
-            Swal.fire('خطأ في الملف', 'صيغة النسخة الاحتياطية غير صحيحة', 'error');
-            return;
-          }
-
-          visitorsDB = parsed;
-          saveDataToLocal();
-          Swal.fire('تم', 'تمت الاستعادة بنجاح', 'success');
-          updateDashboard();
-          if (accessStatus.register) renderTable();
-          switchPage('dashboard');
-        } catch (err) {
-          console.error('[restoreBackup] JSON parse error:', err);
-          Swal.fire('خطأ في قراءة الملف', 'تعذر قراءة محتوى النسخة الاحتياطية', 'error');
-        }
-      };
-
-      reader.onerror = err => {
-        console.error('[restoreBackup] FileReader error:', err);
-        Swal.fire('خطأ في الملف', 'تعذر فتح ملف النسخة الاحتياطية', 'error');
-      };
-
-      reader.readAsText(file);
+      showSyncStatus('تم تنزيل النسخة الاحتياطية');
     }
 
     function clearAllData() {
@@ -976,19 +1070,41 @@
       
       Swal.fire({
         title: 'تحذير خطير!',
-        text: 'هل أنت متأكد من حذف كافة البيانات نهائياً؟',
+        html: `
+          <div class="text-danger">
+            <i class="fas fa-exclamation-triangle fa-2x mb-3 d-block"></i>
+            <p>هل أنت متأكد من حذف <strong>كافة</strong> البيانات نهائياً؟</p>
+            <p class="text-warning">سيتم حذف جميع السجلات من MongoDB أيضاً</p>
+          </div>
+        `,
         icon: 'error',
         showCancelButton: true,
         confirmButtonColor: '#dc3545',
         confirmButtonText: 'نعم، احذف الكل!',
-        cancelButtonText: 'إلغاء'
-      }).then((result) => {
+        cancelButtonText: 'إلغاء',
+        reverseButtons: true
+      }).then(async (result) => {
         if (result.isConfirmed) {
+          Swal.fire({
+            title: 'جاري الحذف...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+          });
+
+          try {
+            // حذف من MongoDB
+            await fetch('/api/visitors/clear', { method: 'DELETE' });
+          } catch (err) {
+            console.error('Clear API error:', err);
+          }
+
+          // حذف محلياً
           visitorsDB = [];
           localStorage.removeItem('GoStationDB');
+          
+          Swal.fire('تم الحذف', 'تم حذف جميع البيانات نهائياً', 'success');
           updateDashboard();
           if (accessStatus.register) renderTable();
-          Swal.fire('تم الحذف', 'تم حذف جميع البيانات', 'success');
         }
       });
     }
@@ -1032,7 +1148,7 @@
           if (res.ok) {
             Swal.fire("تم الحفظ", "تم حفظ الزائر في النظام", "success");
             form.reset();
-            await loadDataFromServer();
+            await loadDataFromServer(); // إعادة تحميل للمزامنة
           } else {
             Swal.fire("خطأ", result.message || "حدث خطأ أثناء الحفظ", "error");
           }
