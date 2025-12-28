@@ -1,12 +1,19 @@
 {
-  "name": "my-first-project",
+  "name": "gostation-visitors",
   "version": "1.0.0",
-  "main": "index.html",
-  "license": "MIT",
+  "description": "نظام سجل الزوار GoStation",
+  "main": "server.js",
   "scripts": {
-    "start": "node api/visitors.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "dependencies": {
-    "mongodb": "^6.3.0"
-  }
+    "express": "^4.18.2",
+    "mongoose": "^7.5.0",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "license": "MIT"
 }
