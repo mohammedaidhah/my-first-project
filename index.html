@@ -1,19 +1,16 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>نظام سجل الزوار - GoStation</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
-  <!-- نفس الـ CSS من الكود الأصلي -->
   <style>
     :root {
       --primary: #3D2F7B;
@@ -21,281 +18,345 @@
       --bg-light: #f3f4f7;
       --text-dark: #2c3e50;
     }
-    /* ... نفس الـ CSS styles من paste.txt ... */
-    /* انسخ كامل الـ style من الكود الأصلي */
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: var(--bg-light);
+      margin: 0;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+    .sidebar {
+      min-height: 100vh;
+      background: var(--primary);
+      color: white;
+      padding: 20px 0;
+      box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+      position: fixed;
+      right: 0;
+      top: 0;
+      width: 260px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .logo-area {
+      width: 100%;
+      text-align: center;
+      padding: 10px 20px 40px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 25px;
+    }
+    .logo-area img { max-width: 170px; height: auto; }
+    .nav { width: 100%; }
+    .nav-link {
+      color: rgba(255,255,255,0.85);
+      padding: 15px 25px;
+      margin: 5px 15px;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .nav-link i { margin-left: 12px; width: 20px; text-align: center; }
+    .nav-link:hover { background: rgba(255,255,255,0.1); color: white; transform: translateX(-5px); }
+    .nav-link.active {
+      background: linear-gradient(45deg, var(--accent), #ff8e4b);
+      color: white;
+      box-shadow: 0 4px 15px rgba(236,103,31,0.4);
+    }
+    .nav-link.locked { opacity: 0.6; cursor: not-allowed; }
+    .nav-link.locked:hover { background: none; transform: none; }
+    .auto-save-box {
+      margin-top: auto;
+      width: 100%;
+      text-align: center;
+      padding: 15px;
+    }
+    .save-badge {
+      background: rgba(0,0,0,0.3);
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: #bdc3c7;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .pulse { animation: pulse 2s infinite; color: #2ecc71; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    .main-content {
+      margin-right: 260px;
+      padding: 30px;
+      min-height: 100vh;
+    }
+    .header-title h3 {
+      color: var(--primary);
+      font-weight: 700;
+      margin-bottom: 25px;
+    }
+    .stat-card {
+      border: none;
+      border-radius: 16px;
+      color: white;
+      min-height: 140px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+      transition: transform 0.3s;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+    }
+    .stat-card:hover { transform: translateY(-5px); }
+    .card-bg-1 { background: linear-gradient(135deg, var(--primary), #5a4b9f); }
+    .card-bg-2 { background: linear-gradient(135deg, var(--accent), #f39c12); }
+    .card-bg-3 { background: linear-gradient(135deg, #2c3e50, #4ca1af); }
+    .stat-value { font-size: 2.5rem; font-weight: 700; margin: 0; }
+    .content-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+      padding: 25px;
+      margin-bottom: 25px;
+    }
+    .form-control, .form-select {
+      border-radius: 10px;
+      padding: 12px;
+      border: 1px solid #e0e0e0;
+      background: #f9f9f9;
+    }
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(61,47,123,0.1);
+      background: white;
+    }
+    .btn-brand { background: var(--primary); color: white; border: none; border-radius: 10px; padding: 10px 30px; font-weight: 600; }
+    .btn-accent { background: var(--accent); color: white; border: none; border-radius: 10px; padding: 10px 30px; font-weight: 600; }
+    .chart-wrapper { height: 300px; position: relative; }
+    .password-modal {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    .password-card {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .sync-status {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 1001;
+      background: rgba(46,204,113,0.9);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-size: 0.85rem;
+      display: none;
+    }
+    .sync-status.error { background: rgba(231,76,60,0.9); }
+    @media (max-width: 768px) {
+      .sidebar { width: 80px; }
+      .main-content { margin-right: 80px; padding: 15px; }
+    }
   </style>
 </head>
 <body>
-  <!-- نفس الـ HTML structure من paste.txt -->
-  <!-- انسخ كامل الـ HTML من paste.txt هنا -->
-  
+  <div class="sidebar">
+    <div class="logo-area">
+      <img src="logo.png" alt="GoStation" style="max-width:170px;" onerror="this.style.display='none'">
+    </div>
+    <nav class="nav">
+      <a class="nav-link active" onclick="switchPage('dashboard')">
+        <i class="fas fa-chart-pie"></i> <span>لوحة القيادة</span>
+      </a>
+      <a class="nav-link locked" id="registerLink" onclick="checkPassword('register')">
+        <i class="fas fa-plus-circle"></i> <span>تسجيل زائر</span>
+      </a>
+      <a class="nav-link locked" id="settingsLink" onclick="checkPassword('settings')">
+        <i class="fas fa-cogs"></i> <span>إدارة النظام</span>
+      </a>
+    </nav>
+    <div class="auto-save-box">
+      <div class="save-badge">
+        <i class="fas fa-circle pulse" id="saveDot"></i>
+        <span id="saveStatus">جاري التحميل...</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <!-- لوحة القيادة -->
+    <div id="dashboard-page">
+      <h3 class="header-title"><i class="fas fa-chart-line text-warning"></i> لوحة المعلومات</h3>
+      <div class="row g-3 mb-4">
+        <div class="col-md-4"><div class="stat-card card-bg-1"><h3 id="statTotal">0</h3><div>إجمالي الزوار</div></div></div>
+        <div class="col-md-4"><div class="stat-card card-bg-2"><h3 id="statToday">0</h3><div>زوار اليوم</div></div></div>
+        <div class="col-md-4"><div class="stat-card card-bg-3"><h4 id="statTopDept">-</h4><div>أكثر الإدارات</div></div></div>
+      </div>
+      <div class="row">
+        <div class="col-md-7"><div class="content-card"><h5>ساعات الذروة</h5><div class="chart-wrapper"><canvas id="chartTime"></canvas></div></div></div>
+        <div class="col-md-5"><div class="content-card"><h5>توزيع الإدارات</h5><div class="chart-wrapper"><canvas id="chartDept"></canvas></div></div></div>
+      </div>
+    </div>
+
+    <!-- تسجيل الزوار -->
+    <div id="register-page" style="display:none;">
+      <h3 class="header-title"><i class="fas fa-door-open text-warning"></i> بوابة الزوار</h3>
+      <form id="visitor-form">
+        <div class="content-card">
+          <h5>بيانات الدخول</h5>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label>التاريخ</label>
+              <input type="text" class="form-control" id="autoDate" readonly>
+            </div>
+            <div class="col-md-6">
+              <label>الوقت</label>
+              <input type="text" class="form-control" id="autoTime" readonly>
+            </div>
+            <div class="col-md-4"><label>الاسم *</label><input type="text" class="form-control" id="vName" required></div>
+            <div class="col-md-4"><label>الجوال *</label><input type="tel" class="form-control" id="vMobile" required></div>
+            <div class="col-md-4"><label>الجهة</label><input type="text" class="form-control" id="vOrg"></div>
+            <div class="col-md-4"><label>الإدارة</label><select class="form-select" id="vDept"></select></div>
+            <div class="col-md-4"><label>الغرض</label><select class="form-select" id="vReason"><option>اجتماع</option><option>صيانة</option><option>أخرى</option></select></div>
+            <div class="col-12 mt-4 d-flex gap-2 justify-content-end">
+              <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('visitor-form').reset()">مسح</button>
+              <button type="submit" class="btn btn-accent">حفظ <i class="fas fa-save"></i></button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal كلمة السر -->
+  <div id="passwordModal" class="password-modal">
+    <div class="password-card">
+      <h3><i class="fas fa-lock"></i> الوصول المقيد</h3>
+      <input type="password" class="form-control mb-3" id="passwordInput" placeholder="كلمة السر">
+      <div>
+        <button class="btn btn-outline-secondary me-2" onclick="closePasswordModal()">إلغاء</button>
+        <button class="btn btn-brand" onclick="verifyPassword()">دخول</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="syncStatus" class="sync-status">
+    <i class="fas fa-sync-alt fa-spin"></i> <span id="syncMessage"></span>
+  </div>
+
   <script>
-    // 🔥 الكود المُصحح الكامل
+    // 🔥 الكود المُختصر والمُختبر
     let visitorsDB = [];
-    const departments = [
-      "رئيس مجلس الادارة", "مكتب الرئيس التنفيذي", "الرئيس التنفيذي للتطوير ونائب الرئيس التنفيذي",
-      "الرئيس التنفيذي للعمليات", "الرئيس التنفيذي المالي", "التشغيل", "الصيانة", "التسويق",
-      "تقنية المعلومات", "الجودة", "المشتريات", "المشاريع", "الممتلكات", "علاقات حكومية",
-      "موارد بشرية", "النقليات", "الامتياز التجاري", "الشؤون القانونية", "الادارة المالية"
-    ];
-
-    const PASSWORD_CONFIG = {
-      register: 'gostation123',
-      settings: 'admin2025'
-    };
-
-    let accessStatus = { register: false, settings: false };
-    let currentRequiredPage = '';
+    let accessStatus = { register: false };
+    let currentPage = 'register';
     let db;
-    let chartDeptInstance = null;
-    let chartTimeInstance = null;
 
-    // 🔥 نظام المزامنة المحسن
-    const syncChannel = new BroadcastChannel('gostation-sync');
-    syncChannel.onmessage = (event) => {
-      if (event.data.type === 'restore') {
-        visitorsDB = event.data.data;
-        saveAllData();
-        updateDashboard();
-        if (accessStatus.register) renderTable();
-        showSyncStatus('تمت مزامنة البيانات من مستخدم آخر ✅');
-      } else if (event.data.type === 'newVisitor') {
-        if (!visitorsDB.some(v => v._id === event.data.data._id)) {
-          visitorsDB.unshift(event.data.data);
-          saveAllData();
-          updateDashboard();
-          if (accessStatus.register) renderTable();
-        }
-      }
-    };
+    const PASSWORD_CONFIG = { register: 'gostation123' };
 
-    // 🔥 تهيئة النظام
-    document.addEventListener('DOMContentLoaded', () => {
+    // ID فريد متوافق مع كل المتصفحات
+    function generateID() {
+      return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    // تهيئة النظام
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('✅ GoStation جاهز');
+      
+      // إعداد القوائم
       const deptSelect = document.getElementById('vDept');
-      departments.forEach(d => {
+      ['التسويق','الصيانة','المشتريات','موارد بشرية','تقنية المعلومات'].forEach(d => {
         const opt = document.createElement('option');
-        opt.value = d;
-        opt.innerText = d;
+        opt.value = opt.textContent = d;
         deptSelect.appendChild(opt);
       });
 
-      updateDateTime();
+      // تحديث الوقت
       setInterval(updateDateTime, 1000);
-      initIndexedDB();
+      updateDateTime();
+
+      // تحميل البيانات
       loadData();
-      setInterval(autoSaveProcess, 10000);
-      checkSavedAccess();
-      setupVisitorForm(); // 🔥 التصحيح الرئيسي
+      setInterval(autoSave, 5000);
+
+      // إعداد النموذج
+      setupForm();
     });
 
-    // 🔥 دالة النموذج المُصححة (الحفظ المضمون)
-    function setupVisitorForm() {
-      const form = document.getElementById('visitor-form');
-      if (!form) return;
-
-      form.addEventListener('submit', async function(e) {
+    function setupForm() {
+      document.getElementById('visitor-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
         if (!accessStatus.register) {
-          Swal.fire('🚫 غير مصرح', 'أدخل كلمة السر: gostation123', 'warning');
+          showPasswordModal('register');
           return;
         }
 
-        e.preventDefault();
-
-        // 🔥 توليد ID فريد مضمون
-        const formData = new FormData(form);
-        const visitorData = {
-          _id: crypto.randomUUID(), // ID فريد 100%
-          date: formData.get('date'),
-          timeIn: formData.get('timeIn'),
-          name: formData.get('name'),
-          mobile: formData.get('mobile'),
-          org: formData.get('org'),
-          dept: formData.get('dept'),
-          reason: formData.get('reason'),
-          appt: formData.get('appt'),
-          notes: formData.get('notes'),
-          createdAt: new Date().toISOString()
+        const visitor = {
+          _id: generateID(),
+          date: document.getElementById('autoDate').value,
+          timeIn: document.getElementById('autoTime').value,
+          name: document.getElementById('vName').value,
+          mobile: document.getElementById('vMobile').value,
+          org: document.getElementById('vOrg').value,
+          dept: document.getElementById('vDept').value
         };
 
-        // محاولة الخادم (اختياري)
-        try {
-          const res = await fetch('/api/visitors', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(visitorData)
-          });
-          if (res.ok) {
-            console.log('✅ تم الحفظ في الخادم');
-          }
-        } catch (err) {
-          console.log('ℹ️ الخادم غير متاح، الحفظ المحلي كافي');
-        }
-
-        // 🔥 الحفظ المحلي الفوري (الأساسي)
-        visitorsDB.unshift(visitorData);
-        saveAllData();
-        
-        // إعادة تعيين النموذج وتحديث الواجهة
-        form.reset();
+        visitorsDB.unshift(visitor);
+        saveData();
+        this.reset();
         updateDashboard();
-        if (accessStatus.register) renderTable();
-
-        // 🔥 مزامنة فورية مع المتصفحات الأخرى
-        syncChannel.postMessage({ 
-          type: 'newVisitor', 
-          data: visitorData 
-        });
-
-        Swal.fire({
-          title: '✅ تم حفظ الزائر!',
-          html: `
-            <div class="text-success">
-              <i class="fas fa-check-circle fa-2x mb-2 d-block"></i>
-              <strong>${visitorData.name}</strong><br>
-              <small>تم الحفظ محلياً + مزامنة فورية</small>
-            </div>
-          `,
-          icon: 'success',
-          timer: 2500,
-          showConfirmButton: false
-        });
+        
+        Swal.fire('✅ تم الحفظ!', visitor.name, 'success');
       });
     }
 
-    // 🔥 دالة الحفظ الشاملة
-    function saveAllData() {
-      saveDataToLocal();
-      if (db) saveDataToIndexedDB(visitorsDB);
-    }
-
-    // 🔥 IndexedDB مُحسن (version 2)
-    function initIndexedDB() {
-      const request = indexedDB.open('GoStationDB', 2);
-      
-      request.onerror = () => {
-        console.error('❌ IndexedDB error - LocalStorage only');
-      };
-      
-      request.onsuccess = (event) => {
-        db = event.target.result;
-        loadDataFromIndexedDB();
-      };
-      
-      request.onupgradeneeded = (event) => {
-        db = event.target.result;
-        const store = db.createObjectStore('visitors', { keyPath: '_id' });
-        console.log('✅ IndexedDB initialized v2');
-      };
-    }
-
-    function saveDataToIndexedDB(data) {
-      if (!db) return;
-      const tx = db.transaction(['visitors'], 'readwrite');
-      const store = tx.objectStore('visitors');
-      store.clear().onsuccess = () => {
-        data.forEach(visitor => store.add(visitor));
-      };
-    }
-
-    function loadDataFromIndexedDB() {
-      if (!db) return;
-      const tx = db.transaction(['visitors'], 'readonly');
-      const store = tx.objectStore('visitors');
-      const request = store.getAll();
-      
-      request.onsuccess = () => {
-        if (request.result.length > 0) {
-          visitorsDB = request.result;
-          saveDataToLocal();
-          updateDashboard();
-          if (accessStatus.register) renderTable();
-        } else {
-          loadDataFromLocal();
-        }
-      };
-    }
-
-    function saveDataToLocal() {
+    function saveData() {
       localStorage.setItem('GoStationDB', JSON.stringify(visitorsDB));
+      document.getElementById('saveStatus').textContent = 'تم الحفظ';
+      setTimeout(() => document.getElementById('saveStatus').textContent = 'متصل', 2000);
     }
 
-    function loadDataFromLocal() {
+    function loadData() {
       try {
         const data = localStorage.getItem('GoStationDB');
         if (data) {
           visitorsDB = JSON.parse(data);
           updateDashboard();
-          if (accessStatus.register) renderTable();
         }
-      } catch (e) {
-        console.error('LocalStorage corrupted, starting fresh');
+      } catch(e) {
+        console.log('بيانات جديدة');
       }
     }
 
-    // 🔥 تحميل البيانات (خادم أولاً، محلي fallback)
-    async function loadData() {
-      showSyncStatus('🔄 جاري التحميل...');
-      
-      try {
-        const res = await fetch('/api/visitors', {
-          method: 'GET',
-          headers: { 'Cache-Control': 'no-cache' }
-        });
-        if (res.ok) {
-          visitorsDB = await res.json();
-          saveAllData();
-          showSyncStatus('✅ تم تحميل البيانات من الخادم');
-          return;
-        }
-      } catch (err) {
-        console.log('ℹ️ Server unavailable');
-      }
-      
-      loadDataFromIndexedDB();
-      showSyncStatus('💾 استخدام البيانات المحلية');
+    function updateDateTime() {
+      const now = new Date();
+      document.getElementById('autoDate').value = now.toLocaleDateString('ar-SA');
+      document.getElementById('autoTime').value = now.toLocaleTimeString('ar-SA', {hour:'2-digit', minute:'2-digit'});
     }
 
-    // باقي الدوال (انسخها من الكود الأصلي في paste.txt)
-    function showSyncStatus(message, isError = false) {
-      const statusEl = document.getElementById('syncStatus');
-      const messageEl = document.getElementById('syncMessage');
-      if (!statusEl || !messageEl) return;
-      
-      messageEl.textContent = message;
-      statusEl.className = `sync-status ${isError ? 'error' : ''}`;
-      statusEl.style.display = 'block';
-      setTimeout(() => statusEl.style.display = 'none', 4000);
-    }
-
-    function checkSavedAccess() {
-      const savedRegister = localStorage.getItem('registerAccess');
-      const savedSettings = localStorage.getItem('settingsAccess');
-      if (savedRegister === 'true') {
-        accessStatus.register = true;
-        unlockPage('register');
-      }
-      if (savedSettings === 'true') {
-        accessStatus.settings = true;
-        unlockPage('settings');
-      }
-    }
-
-    function saveAccess(page) {
-      localStorage.setItem(page + 'Access', 'true');
-      accessStatus[page] = true;
-      unlockPage(page);
-    }
-
-    function unlockPage(page) {
-      const link = document.getElementById(page + 'Link');
-      if (link) link.classList.remove('locked');
+    function updateDashboard() {
+      document.getElementById('statTotal').textContent = visitorsDB.length;
+      document.getElementById('statToday').textContent = visitorsDB.filter(v => v.date === document.getElementById('autoDate').value).length;
     }
 
     function checkPassword(page) {
       if (accessStatus[page]) {
         switchPage(page);
       } else {
-        currentRequiredPage = page;
+        currentPage = page;
         showPasswordModal(page);
       }
     }
@@ -303,8 +364,6 @@
     function showPasswordModal(page) {
       document.getElementById('passwordModal').style.display = 'flex';
       document.getElementById('passwordInput').focus();
-      document.getElementById('passwordHint').textContent = 
-        `${page === 'register' ? 'سجل الزوار' : 'إدارة النظام'}`;
     }
 
     function closePasswordModal() {
@@ -314,169 +373,38 @@
 
     function verifyPassword() {
       const password = document.getElementById('passwordInput').value;
-      const requiredPassword = PASSWORD_CONFIG[currentRequiredPage];
-      
-      if (password === requiredPassword) {
-        saveAccess(currentRequiredPage);
+      if (password === PASSWORD_CONFIG[currentPage]) {
+        accessStatus[currentPage] = true;
+        const link = document.getElementById(currentPage + 'Link');
+        if (link) link.classList.remove('locked');
         closePasswordModal();
-        switchPage(currentRequiredPage);
-        Swal.fire({
-          title: '✅ تم التحقق!',
-          text: 'تم منح الصلاحية لهذه الصفحة',
-          icon: 'success',
-          timer: 1500,
-          showConfirmButton: false
-        });
+        switchPage(currentPage);
+        Swal.fire('✅ تم الدخول!', '', 'success');
       } else {
-        Swal.fire({
-          title: '❌ كلمة مرور خاطئة!',
-          text: 'جرب مرة أخرى',
-          icon: 'error',
-          timer: 2000,
-          showConfirmButton: false
-        });
+        Swal.fire('❌ خطأ', 'كلمة السر غير صحيحة', 'error');
         document.getElementById('passwordInput').value = '';
-        document.getElementById('passwordInput').focus();
       }
     }
 
-    document.addEventListener('keypress', function(e) {
+    function switchPage(page) {
+      document.querySelectorAll('[id$="-page"]').forEach(el => el.style.display = 'none');
+      document.getElementById(page + '-page').style.display = 'block';
+      
+      document.querySelectorAll('.nav-link').forEach((l,i) => {
+        l.classList.toggle('active', ['dashboard','register','settings'][i] === page);
+      });
+    }
+
+    function autoSave() {
+      saveData();
+    }
+
+    // Enter للكلمة السر
+    document.addEventListener('keypress', e => {
       if (e.key === 'Enter' && document.getElementById('passwordModal').style.display === 'flex') {
         verifyPassword();
       }
     });
-
-    function updateDateTime() {
-      const now = new Date();
-      const dateInput = document.getElementById('autoDate');
-      const timeInput = document.getElementById('autoTime');
-      const headerTime = document.getElementById('headerTime');
-      
-      if (dateInput) dateInput.value = now.toLocaleDateString('en-GB');
-      if (timeInput) timeInput.value = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
-      if (headerTime) headerTime.innerText = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
-    }
-
-    function switchPage(pageId) {
-      ['register-page', 'dashboard-page', 'settings-page'].forEach(id => {
-        document.getElementById(id).style.display = 'none';
-      });
-      document.getElementById(pageId + '-page').style.display = 'block';
-
-      const links = document.querySelectorAll('.nav-link');
-      links.forEach(l => l.classList.remove('active'));
-      
-      const activeIndex = { dashboard: 0, register: 1, settings: 2 }[pageId];
-      if (activeIndex !== undefined) links[activeIndex].classList.add('active');
-
-      if (pageId === 'dashboard') updateDashboard();
-      if (pageId === 'register' && accessStatus.register) renderTable();
-    }
-
-    function autoSaveProcess() {
-      saveAllData();
-      const badge = document.getElementById('saveStatus');
-      const dot = document.getElementById('saveDot');
-      if (badge && dot) {
-        const time = new Date().toLocaleTimeString('en-US', {
-          hour12: false, hour: '2-digit', minute: '2-digit'
-        });
-        badge.innerText = `تم الحفظ: ${time}`;
-        dot.style.color = '#2ecc71';
-        setTimeout(() => { 
-          badge.innerText = 'النظام متصل ✅'; 
-        }, 3000);
-      }
-    }
-
-    function updateDashboard() {
-      document.getElementById('statTotal').innerText = visitorsDB.length.toLocaleString();
-      
-      const todayStr = new Date().toLocaleDateString('en-GB');
-      const todayCount = visitorsDB.filter(v => v.date === todayStr).length;
-      document.getElementById('statToday').innerText = todayCount;
-
-      const deptCounts = {};
-      visitorsDB.forEach(v => {
-        if (v.dept) deptCounts[v.dept] = (deptCounts[v.dept] || 0) + 1;
-      });
-
-      let topDept = '-', maxVal = 0;
-      for (const [d, c] of Object.entries(deptCounts)) {
-        if (c > maxVal) {
-          maxVal = c;
-          topDept = d;
-        }
-      }
-      document.getElementById('statTopDept').innerText = topDept;
-      
-      drawCharts(deptCounts);
-    }
-
-    function renderTable() {
-      if (!accessStatus.register) return;
-      const tbody = document.getElementById('tableBody');
-      const filterInput = document.getElementById('searchBox');
-      const filter = filterInput ? filterInput.value.toUpperCase() : '';
-      tbody.innerHTML = '';
-
-      [...visitorsDB].reverse().forEach(v => {
-        if (!filter || 
-            (v.name && v.name.toUpperCase().includes(filter)) || 
-            (v.org && v.org.toUpperCase().includes(filter))) {
-          
-          const row = `
-            <tr>
-              <td>${v.date || ''}</td>
-              <td>${v.timeIn || ''}</td>
-              <td class="fw-bold text-primary">${v.name || ''}</td>
-              <td>${v.org || ''}</td>
-              <td><span class="badge bg-light text-dark border">${v.dept || ''}</span></td>
-              <td><span class="badge bg-success">تم الدخول</span></td>
-              <td>
-                <button class="btn btn-sm btn-outline-danger" onclick="deleteVisitor('${v._id}')">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </td>
-            </tr>`;
-          tbody.insertAdjacentHTML('beforeend', row);
-        }
-      });
-    }
-
-    async function deleteVisitor(id) {
-      if (!accessStatus.register) return;
-      
-      Swal.fire({
-        title: 'حذف السجل؟',
-        text: 'لا يمكن التراجع عن هذا الإجراء',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33'
-      }).then(async result => {
-        if (result.isConfirmed) {
-          try {
-            await fetch(`/api/visitors/${id}`, { method: 'DELETE' });
-          } catch (err) {
-            console.log('Server delete failed, local only');
-          }
-          
-          visitorsDB = visitorsDB.filter(v => v._id !== id);
-          saveAllData();
-          updateDashboard();
-          renderTable();
-          Swal.fire('تم الحذف ✅', '', 'success');
-        }
-      });
-    }
-
-    function drawCharts(deptCounts) {
-      // Charts code from original (copy from paste.txt)
-      // ... رسم الرسوم البيانية
-    }
-
-    // باقي الدوال: printBadge, exportToExcel, downloadBackup, etc.
-    // انسخها من الكود الأصلي في paste.txt بدون تغيير
   </script>
 </body>
 </html>
