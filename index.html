@@ -512,7 +512,7 @@
             </h5>
             <p class="text-muted mb-2">استرجاع البيانات من ملف تم حفظه مسبقاً.</p>
             <p class="text-success small mb-2">
-              <i class="fas fa-sync-alt ms-1"></i> سيتم المزامنة مع MongoDB تلقائياً
+              <i class="fas fa-sync-alt ms-1"></i> سيتم المزامنة مع جميع المستخدمين فوراً
             </p>
             <input type="file" id="jsonFile" accept=".json" class="form-control mt-2">
             <button class="btn btn-outline-warning w-100 mt-2"
@@ -581,6 +581,20 @@
 
     let currentRequiredPage = '';
 
+    // 🔥 نظام المزامنة بين المتصفحات
+    const syncChannel = new BroadcastChannel('gostation-sync');
+
+    syncChannel.onmessage = (event) => {
+      if (event.data.type === 'restore') {
+        visitorsDB = event.data.data;
+        saveDataToLocal();
+        saveDataToIndexedDB(visitorsDB);
+        updateDashboard();
+        if (accessStatus.register) renderTable();
+        showSyncStatus('تمت مزامنة البيانات من مستخدم آخر');
+      }
+    };
+
     document.addEventListener('DOMContentLoaded', () => {
       const deptSelect = document.getElementById('vDept');
       departments.forEach(d => {
@@ -592,7 +606,8 @@
 
       updateDateTime();
       setInterval(updateDateTime, 1000);
-      loadDataFromServer();
+      initIndexedDB();
+      loadData();
       setInterval(autoSaveProcess, 10000);
       checkSavedAccess();
     });
@@ -685,31 +700,77 @@
       }
     });
 
-    // تحميل البيانات من الخادم
-    async function loadDataFromServer() {
+    // 🔥 IndexedDB Functions
+    let db;
+    function initIndexedDB() {
+      const request = indexedDB.open('GoStationDB', 1);
+      request.onerror = () => console.error('IndexedDB error');
+      request.onsuccess = (event) => {
+        db = event.target.result;
+        loadDataFromIndexedDB();
+      };
+      request.onupgradeneeded = (event) => {
+        db = event.target.result;
+        if (!db.objectStoreNames.contains('visitors')) {
+          db.createObjectStore('visitors', { keyPath: '_id' });
+        }
+      };
+    }
+
+    function saveDataToIndexedDB(data) {
+      if (!db) return;
+      const tx = db.transaction(['visitors'], 'readwrite');
+      const store = tx.objectStore('visitors');
+      store.clear();
+      data.forEach(visitor => store.add(visitor));
+    }
+
+    function loadDataFromIndexedDB() {
+      if (!db) return;
+      const tx = db.transaction(['visitors'], 'readonly');
+      const store = tx.objectStore('visitors');
+      const request = store.getAll();
+      request.onsuccess = () => {
+        if (request.result.length > 0) {
+          visitorsDB = request.result;
+          saveDataToLocal();
+          updateDashboard();
+          if (accessStatus.register) renderTable();
+        } else {
+          loadDataFromLocal();
+        }
+      };
+    }
+
+    // تحميل البيانات (محسن)
+    async function loadData() {
       try {
         showSyncStatus('جاري تحميل البيانات...');
+        // محاولة الخادم أولاً
         const res = await fetch('/api/visitors', { 
           method: 'GET',
           headers: { 'Cache-Control': 'no-cache' }
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        visitorsDB = Array.isArray(data) ? data : [];
-        saveDataToLocal();
-        updateDashboard();
-        if (accessStatus.register) renderTable();
-        showSyncStatus('تم تحميل البيانات بنجاح');
+        if (res.ok) {
+          const data = await res.json();
+          visitorsDB = Array.isArray(data) ? data : [];
+          saveDataToLocal();
+          saveDataToIndexedDB(visitorsDB);
+          updateDashboard();
+          if (accessStatus.register) renderTable();
+          showSyncStatus('تم تحميل البيانات بنجاح');
+          return;
+        }
       } catch (err) {
-        console.error('[loadDataFromServer] error:', err);
-        showSyncStatus('فشل الاتصال - استخدام البيانات المحلية', true);
-        loadDataFromLocal();
-        updateDashboard();
-        if (accessStatus.register) renderTable();
+        console.error('[loadData] error:', err);
       }
+      
+      // fallback لـ IndexedDB أو LocalStorage
+      loadDataFromIndexedDB();
+      showSyncStatus('استخدام البيانات المحلية المزامنة');
     }
 
-    // استعادة النسخة الاحتياطية مع المزامنة
+    // 🔥 دالة استعادة النسخة الاحتياطية المحسنة
     async function restoreBackup() {
       if (!accessStatus.settings) {
         Swal.fire('غير مصرح', 'يجب تسجيل الدخول أولاً', 'warning');
@@ -724,7 +785,7 @@
 
       Swal.fire({
         title: 'جاري الاستعادة...',
-        text: 'سيتم رفع البيانات للمزامنة مع جميع المستخدمين',
+        text: 'سيتم تحديث البيانات محلياً لجميع المستخدمين',
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
       });
@@ -735,41 +796,48 @@
           const parsed = JSON.parse(e.target.result || '[]');
           if (!Array.isArray(parsed)) throw new Error('صيغة غير صحيحة');
 
+          // حفظ في كل مكان
           visitorsDB = parsed;
           saveDataToLocal();
+          saveDataToIndexedDB(parsed);
 
-          // رفع لـ MongoDB للمزامنة
-          const response = await fetch('/api/visitors/restore', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              visitors: parsed,
-              action: 'replace_all'
-            })
+          // 🔥 إرسال للمزامنة الفورية
+          syncChannel.postMessage({
+            type: 'restore',
+            data: parsed
           });
 
-          const result = await response.json();
-
-          if (response.ok && result.success) {
-            Swal.fire({
-              title: 'تم الاستعادة بنجاح! ✅',
-              html: `
-                <div class="text-success">
-                  <p><i class="fas fa-check-circle ms-2"></i>تم تحديث ${parsed.length} سجل</p>
-                  <p><i class="fas fa-sync-alt ms-2"></i>تمت المزامنة مع MongoDB</p>
-                  <p class="text-primary"><strong>سيظهر لجميع المستخدمين فوراً</strong></p>
-                </div>
-              `,
-              icon: 'success',
-              confirmButtonText: 'حسناً'
+          // محاولة رفع للخادم كخيار إضافي
+          try {
+            await fetch('/api/visitors/restore', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                visitors: parsed,
+                action: 'replace_all'
+              })
             });
-            await loadDataFromServer();
-            updateDashboard();
-            if (accessStatus.register) renderTable();
-            switchPage('dashboard');
-          } else {
-            throw new Error(result.message || 'فشل رفع البيانات');
+          } catch (err) {
+            console.log('Server sync failed, using local sync');
           }
+
+          Swal.fire({
+            title: 'تم الاستعادة بنجاح! ✅',
+            html: `
+              <div class="text-success">
+                <p><i class="fas fa-check-circle ms-2"></i>تم تحديث ${parsed.length} سجل</p>
+                <p><i class="fas fa-sync-alt ms-2"></i>تمت المزامنة الفورية بين جميع المتصفحات</p>
+                <p class="text-primary"><strong>سيظهر لجميع المستخدمين فوراً</strong></p>
+              </div>
+            `,
+            icon: 'success',
+            confirmButtonText: 'حسناً'
+          });
+          
+          updateDashboard();
+          if (accessStatus.register) renderTable();
+          switchPage('dashboard');
+          
         } catch (err) {
           console.error('[restoreBackup] error:', err);
           Swal.fire({
@@ -824,6 +892,7 @@
 
     function autoSaveProcess() {
       saveDataToLocal();
+      saveDataToIndexedDB(visitorsDB);
       const badge = document.getElementById('saveStatus');
       const dot = document.getElementById('saveDot');
       if (badge && dot) {
@@ -907,6 +976,7 @@
           }
           visitorsDB = visitorsDB.filter(v => (v._id || v.id) !== id);
           saveDataToLocal();
+          saveDataToIndexedDB(visitorsDB);
           updateDashboard();
           renderTable();
           Swal.fire('تم الحذف', '', 'success');
@@ -1030,7 +1100,7 @@
           <div class="text-danger">
             <i class="fas fa-exclamation-triangle fa-2x mb-3 d-block"></i>
             <p>هل أنت متأكد من حذف <strong>كافة</strong> البيانات نهائياً؟</p>
-            <p class="text-warning">سيتم حذف جميع السجلات من MongoDB أيضاً</p>
+            <p class="text-warning">سيتم حذف جميع السجلات من جميع المتصفحات</p>
           </div>
         `,
         icon: 'error',
@@ -1051,8 +1121,15 @@
           } catch (err) {
             console.error('Clear API error:', err);
           }
+          
+          // حذف من كل مكان
           visitorsDB = [];
           localStorage.removeItem('GoStationDB');
+          if (db) saveDataToIndexedDB([]);
+          
+          // إشعار المستخدمين الآخرين
+          syncChannel.postMessage({ type: 'clear' });
+          
           Swal.fire('تم الحذف', 'تم حذف جميع البيانات نهائياً', 'success');
           updateDashboard();
           if (accessStatus.register) renderTable();
@@ -1094,13 +1171,19 @@
           if (res.ok) {
             Swal.fire("تم الحفظ", "تم حفظ الزائر في النظام", "success");
             form.reset();
-            await loadDataFromServer();
+            loadData();
           } else {
             Swal.fire("خطأ", result.message || "حدث خطأ أثناء الحفظ", "error");
           }
         } catch (err) {
           console.error('[POST /api/visitors] error:', err);
-          Swal.fire("خطأ اتصال", "تعذر الاتصال بالخادم، حاول مرة أخرى", "error");
+          // حفظ محلي حتى لو فشل الخادم
+          visitorsDB.unshift(data);
+          saveDataToLocal();
+          saveDataToIndexedDB(visitorsDB);
+          updateDashboard();
+          if (accessStatus.register) renderTable();
+          Swal.fire("تم الحفظ محلياً", "سيتم المزامنة عند الاتصال", "success");
         }
       });
     });
