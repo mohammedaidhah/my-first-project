@@ -43,22 +43,21 @@
     .logo-area {
       width: 100%;
       text-align: center;
-      padding: 0 20px 30px 20px;
+      padding: 10px 20px 40px 20px; /* مساحة أكبر */
       border-bottom: 1px solid rgba(255,255,255,0.1);
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       display: flex;
       justify-content: center;
+      align-items: center;
     }
     .logo-area img {
-      max-width: 140px;
+      max-width: 170px;           /* أكبر من قبل */
       height: auto;
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
       display: block;
       margin: 0 auto;
     }
-    .nav {
-      width: 100%;
-    }
+    .nav { width: 100%; }
     .nav-link {
       color: rgba(255,255,255,0.85);
       padding: 15px 25px;
@@ -187,7 +186,7 @@
     }
     @media (max-width: 768px) {
       .sidebar { width: 80px; padding-top: 15px; }
-      .sidebar .logo-area img { max-width: 40px; }
+      .sidebar .logo-area img { max-width: 60px; }
       .nav-link span { display: none; }
       .nav-link i { margin: 0; font-size: 1.5rem; }
       .main-content { margin-right: 80px; padding: 15px; }
@@ -197,7 +196,7 @@
   </style>
 </head>
 <body>
-  <!-- شعار أعلى الصفحة إن رغبت يمكن حذفه -->
+  <!-- شعار أعلى الصفحة (اختياري) -->
   <div style="position: fixed; top: 15px; right: 25px; z-index: 9999;">
     <img src="logo gostation.png" alt="شعار قوستيشن" style="height: 55px;">
   </div>
@@ -231,13 +230,10 @@
 
   <!-- المحتوى الرئيسي -->
   <div class="main-content">
-    <!-- صفحة لوحة القيادة (إحصائيات + رسوم فقط) -->
+    <!-- لوحة القيادة: إحصائيات ورسوم فقط -->
     <div id="dashboard-page">
       <div class="header-title">
         <h3><i class="fas fa-chart-line ms-2 text-warning"></i> لوحة المعلومات والتقارير</h3>
-        <button class="btn btn-success btn-sm" onclick="exportToExcel()">
-          <i class="fas fa-file-excel ms-2"></i> تصدير Excel
-        </button>
       </div>
 
       <div class="row mb-4 g-3">
@@ -284,7 +280,7 @@
       </div>
     </div>
 
-    <!-- صفحة التسجيل + سجل الزوار أسفلها -->
+    <!-- صفحة التسجيل + سجل الزوار + زر التصدير -->
     <div id="register-page" class="fade-in" style="display:none;">
       <div class="header-title">
         <h3><i class="fas fa-door-open ms-2 text-warning"></i> بوابة الزوار</h3>
@@ -370,12 +366,17 @@
         </div>
       </form>
 
-      <!-- سجل الزوار أسفل صفحة التسجيل -->
+      <!-- سجل الزوار + زر التصدير -->
       <div class="content-card">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h5 class="fw-bold m-0">سجل الزوار</h5>
-          <input type="text" id="searchBox" class="form-control w-25"
-                 placeholder="بحث باسم الزائر..." onkeyup="renderTable()">
+          <div class="d-flex gap-2">
+            <input type="text" id="searchBox" class="form-control"
+                   placeholder="بحث باسم الزائر..." onkeyup="renderTable()">
+            <button class="btn btn-success" onclick="exportToExcel()">
+              <i class="fas fa-file-excel ms-2"></i> تصدير Excel
+            </button>
+          </div>
         </div>
         <div class="table-responsive">
           <table class="table table-hover align-middle">
