@@ -36,17 +36,28 @@
       width: 260px;
       z-index: 1000;
       transition: all 0.3s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     .logo-area {
+      width: 100%;
       text-align: center;
       padding: 0 20px 30px 20px;
       border-bottom: 1px solid rgba(255,255,255,0.1);
       margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
     }
     .logo-area img {
       max-width: 140px;
       height: auto;
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+      display: block;
+      margin: 0 auto;
+    }
+    .nav {
+      width: 100%;
     }
     .nav-link {
       color: rgba(255,255,255,0.85);
@@ -70,10 +81,8 @@
       box-shadow: 0 4px 15px rgba(236, 103, 31, 0.4);
     }
     .auto-save-box {
-      position: absolute;
-      bottom: 20px;
-      left: 0;
-      right: 0;
+      margin-top: auto;
+      width: 100%;
       text-align: center;
       padding: 15px;
     }
@@ -188,7 +197,7 @@
   </style>
 </head>
 <body>
-  <!-- الشعار -->
+  <!-- شعار أعلى الصفحة إن رغبت يمكن حذفه -->
   <div style="position: fixed; top: 15px; right: 25px; z-index: 9999;">
     <img src="logo gostation.png" alt="شعار قوستيشن" style="height: 55px;">
   </div>
@@ -200,7 +209,6 @@
            onerror="this.style.display='none'; document.getElementById('alt-logo').style.display='block';">
     </div>
 
-    <!-- ترتيب القائمة: أولا لوحة القيادة، ثم تسجيل زائر -->
     <nav class="nav flex-column">
       <a class="nav-link active" onclick="switchPage('dashboard')">
         <i class="fas fa-chart-pie"></i> <span>لوحة القيادة</span>
@@ -223,7 +231,7 @@
 
   <!-- المحتوى الرئيسي -->
   <div class="main-content">
-    <!-- صفحة لوحة القيادة (ظاهرة افتراضيا) -->
+    <!-- صفحة لوحة القيادة (إحصائيات + رسوم فقط) -->
     <div id="dashboard-page">
       <div class="header-title">
         <h3><i class="fas fa-chart-line ms-2 text-warning"></i> لوحة المعلومات والتقارير</h3>
@@ -274,33 +282,9 @@
           </div>
         </div>
       </div>
-
-      <div class="content-card">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-bold m-0">سجل أحدث الزوار</h5>
-          <input type="text" id="searchBox" class="form-control w-25"
-                 placeholder="بحث باسم الزائر..." onkeyup="renderTable()">
-        </div>
-        <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead>
-              <tr>
-                <th>التاريخ</th>
-                <th>الوقت</th>
-                <th>اسم الزائر</th>
-                <th>الجهة</th>
-                <th>الإدارة</th>
-                <th>الحالة</th>
-                <th>إجراء</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-          </table>
-        </div>
-      </div>
     </div>
 
-    <!-- صفحة التسجيل (مخفية عند البداية) -->
+    <!-- صفحة التسجيل + سجل الزوار أسفلها -->
     <div id="register-page" class="fade-in" style="display:none;">
       <div class="header-title">
         <h3><i class="fas fa-door-open ms-2 text-warning"></i> بوابة الزوار</h3>
@@ -385,6 +369,31 @@
           </div>
         </div>
       </form>
+
+      <!-- سجل الزوار أسفل صفحة التسجيل -->
+      <div class="content-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold m-0">سجل الزوار</h5>
+          <input type="text" id="searchBox" class="form-control w-25"
+                 placeholder="بحث باسم الزائر..." onkeyup="renderTable()">
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>التاريخ</th>
+                <th>الوقت</th>
+                <th>اسم الزائر</th>
+                <th>الجهة</th>
+                <th>الإدارة</th>
+                <th>الحالة</th>
+                <th>إجراء</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- صفحة الإعدادات -->
@@ -461,10 +470,12 @@
         const data = await res.json();
         visitorsDB = Array.isArray(data) ? data : [];
         updateDashboard();
+        renderTable();
       } catch (err) {
         console.error('[loadDataFromServer] error:', err);
         loadDataFromLocal();
         updateDashboard();
+        renderTable();
       }
     }
 
@@ -492,6 +503,7 @@
       if (pageId === 'settings')  links[2].classList.add('active');
 
       if (pageId === 'dashboard') updateDashboard();
+      if (pageId === 'register')  renderTable();
     }
 
     function loadDataFromLocal() {
@@ -544,7 +556,6 @@
       }
       document.getElementById('statTopDept').innerText = topDept;
 
-      renderTable();
       drawCharts(deptCounts);
     }
 
@@ -600,6 +611,7 @@
           visitorsDB = visitorsDB.filter(v => (v._id || v.id) !== id);
           saveDataToLocal();
           updateDashboard();
+          renderTable();
           Swal.fire('تم الحذف', '', 'success');
         }
       });
@@ -731,6 +743,7 @@
           saveDataToLocal();
           Swal.fire('تم', 'تمت الاستعادة بنجاح', 'success');
           updateDashboard();
+          renderTable();
           switchPage('dashboard');
         } catch (err) {
           console.error('[restoreBackup] JSON parse error:', err);
@@ -751,6 +764,7 @@
         visitorsDB = [];
         localStorage.removeItem('GoStationDB');
         updateDashboard();
+        renderTable();
       }
     }
   </script>
