@@ -200,12 +200,13 @@
            onerror="this.style.display='none'; document.getElementById('alt-logo').style.display='block';">
     </div>
 
+    <!-- ترتيب القائمة: أولا لوحة القيادة، ثم تسجيل زائر -->
     <nav class="nav flex-column">
-      <a class="nav-link active" onclick="switchPage('register')">
-        <i class="fas fa-plus-circle"></i> <span>تسجيل زائر</span>
-      </a>
-      <a class="nav-link" onclick="switchPage('dashboard')">
+      <a class="nav-link active" onclick="switchPage('dashboard')">
         <i class="fas fa-chart-pie"></i> <span>لوحة القيادة</span>
+      </a>
+      <a class="nav-link" onclick="switchPage('register')">
+        <i class="fas fa-plus-circle"></i> <span>تسجيل زائر</span>
       </a>
       <a class="nav-link" onclick="switchPage('settings')">
         <i class="fas fa-cogs"></i> <span>إدارة النظام</span>
@@ -222,8 +223,85 @@
 
   <!-- المحتوى الرئيسي -->
   <div class="main-content">
-    <!-- صفحة التسجيل -->
-    <div id="register-page" class="fade-in">
+    <!-- صفحة لوحة القيادة (ظاهرة افتراضيا) -->
+    <div id="dashboard-page">
+      <div class="header-title">
+        <h3><i class="fas fa-chart-line ms-2 text-warning"></i> لوحة المعلومات والتقارير</h3>
+        <button class="btn btn-success btn-sm" onclick="exportToExcel()">
+          <i class="fas fa-file-excel ms-2"></i> تصدير Excel
+        </button>
+      </div>
+
+      <div class="row mb-4 g-3">
+        <div class="col-md-4">
+          <div class="stat-card card-bg-1 p-4">
+            <i class="fas fa-users stat-icon"></i>
+            <h3 class="stat-value" id="statTotal">0</h3>
+            <div class="stat-label">إجمالي الزوار المسجلين</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-card card-bg-2 p-4">
+            <i class="fas fa-user-clock stat-icon"></i>
+            <h3 class="stat-value" id="statToday">0</h3>
+            <div class="stat-label">زوار اليوم</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-card card-bg-3 p-4">
+            <i class="fas fa-building stat-icon"></i>
+            <h3 class="stat-value h4" id="statTopDept">-</h3>
+            <div class="stat-label">الإدارة الأكثر نشاطاً</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-4">
+        <div class="col-md-7">
+          <div class="content-card">
+            <h5 class="fw-bold mb-3">ساعات الذروة (أوقات الدخول)</h5>
+            <div class="chart-wrapper">
+              <canvas id="chartTime"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-5">
+          <div class="content-card">
+            <h5 class="fw-bold mb-3">توزيع الزوار حسب الإدارة</h5>
+            <div class="chart-wrapper">
+              <canvas id="chartDept"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold m-0">سجل أحدث الزوار</h5>
+          <input type="text" id="searchBox" class="form-control w-25"
+                 placeholder="بحث باسم الزائر..." onkeyup="renderTable()">
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>التاريخ</th>
+                <th>الوقت</th>
+                <th>اسم الزائر</th>
+                <th>الجهة</th>
+                <th>الإدارة</th>
+                <th>الحالة</th>
+                <th>إجراء</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- صفحة التسجيل (مخفية عند البداية) -->
+    <div id="register-page" class="fade-in" style="display:none;">
       <div class="header-title">
         <h3><i class="fas fa-door-open ms-2 text-warning"></i> بوابة الزوار</h3>
         <div class="text-muted h6">
@@ -309,83 +387,6 @@
       </form>
     </div>
 
-    <!-- صفحة لوحة القيادة -->
-    <div id="dashboard-page" style="display:none;">
-      <div class="header-title">
-        <h3><i class="fas fa-chart-line ms-2 text-warning"></i> لوحة المعلومات والتقارير</h3>
-        <button class="btn btn-success btn-sm" onclick="exportToExcel()">
-          <i class="fas fa-file-excel ms-2"></i> تصدير Excel
-        </button>
-      </div>
-
-      <div class="row mb-4 g-3">
-        <div class="col-md-4">
-          <div class="stat-card card-bg-1 p-4">
-            <i class="fas fa-users stat-icon"></i>
-            <h3 class="stat-value" id="statTotal">0</h3>
-            <div class="stat-label">إجمالي الزوار المسجلين</div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="stat-card card-bg-2 p-4">
-            <i class="fas fa-user-clock stat-icon"></i>
-            <h3 class="stat-value" id="statToday">0</h3>
-            <div class="stat-label">زوار اليوم</div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="stat-card card-bg-3 p-4">
-            <i class="fas fa-building stat-icon"></i>
-            <h3 class="stat-value h4" id="statTopDept">-</h3>
-            <div class="stat-label">الإدارة الأكثر نشاطاً</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="row mb-4">
-        <div class="col-md-7">
-          <div class="content-card">
-            <h5 class="fw-bold mb-3">ساعات الذروة (أوقات الدخول)</h5>
-            <div class="chart-wrapper">
-              <canvas id="chartTime"></canvas>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-5">
-          <div class="content-card">
-            <h5 class="fw-bold mb-3">توزيع الزوار حسب الإدارة</h5>
-            <div class="chart-wrapper">
-              <canvas id="chartDept"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="content-card">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-bold m-0">سجل أحدث الزوار</h5>
-          <input type="text" id="searchBox" class="form-control w-25"
-                 placeholder="بحث باسم الزائر..." onkeyup="renderTable()">
-        </div>
-        <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead>
-              <tr>
-                <th>التاريخ</th>
-                <th>الوقت</th>
-                <th>اسم الزائر</th>
-                <th>الجهة</th>
-                <th>الإدارة</th>
-                <th>الحالة</th>
-                <th>إجراء</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
     <!-- صفحة الإعدادات -->
     <div id="settings-page" style="display:none;">
       <div class="header-title">
@@ -449,7 +450,6 @@
       updateDateTime();
       setInterval(updateDateTime, 1000);
 
-      // بدّلنا من localStorage إلى الخادم
       loadDataFromServer();
 
       setInterval(autoSaveProcess, 10000);
@@ -460,11 +460,9 @@
         const res = await fetch('/api/visitors');
         const data = await res.json();
         visitorsDB = Array.isArray(data) ? data : [];
-        console.log('[loadDataFromServer] length:', visitorsDB.length);
         updateDashboard();
       } catch (err) {
         console.error('[loadDataFromServer] error:', err);
-        // في حال الفشل يمكن الرجوع لنسخة localStorage القديمة (اختياري)
         loadDataFromLocal();
         updateDashboard();
       }
@@ -472,9 +470,12 @@
 
     function updateDateTime() {
       const now = new Date();
-      document.getElementById('autoDate').value = now.toLocaleDateString('en-GB');
-      document.getElementById('autoTime').value = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
-      document.getElementById('headerTime').innerText =
+      const dateInput = document.getElementById('autoDate');
+      const timeInput = document.getElementById('autoTime');
+      if (dateInput) dateInput.value = now.toLocaleDateString('en-GB');
+      if (timeInput) timeInput.value = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+      const headerTime = document.getElementById('headerTime');
+      if (headerTime) headerTime.innerText =
         now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
     }
 
@@ -484,39 +485,37 @@
       document.getElementById('settings-page').style.display = 'none';
       document.getElementById(pageId + '-page').style.display = 'block';
 
-      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
       const links = document.querySelectorAll('.nav-link');
-      if(pageId === 'register') links[0].classList.add('active');
-      if(pageId === 'dashboard') { links[1].classList.add('active'); updateDashboard(); }
-      if(pageId === 'settings') links[2].classList.add('active');
+      links.forEach(l => l.classList.remove('active'));
+      if (pageId === 'dashboard') links[0].classList.add('active');
+      if (pageId === 'register')  links[1].classList.add('active');
+      if (pageId === 'settings')  links[2].classList.add('active');
+
+      if (pageId === 'dashboard') updateDashboard();
     }
 
     function loadDataFromLocal() {
       const data = localStorage.getItem('GoStationDB');
-      console.log('[loadDataFromLocal] raw data:', data);
       if (data) {
         visitorsDB = JSON.parse(data);
-        console.log('[loadDataFromLocal] parsed length:', visitorsDB.length);
-      } else {
-        console.log('[loadDataFromLocal] no data in localStorage');
       }
     }
 
     function saveDataToLocal() {
       localStorage.setItem('GoStationDB', JSON.stringify(visitorsDB));
-      console.log('[saveDataToLocal] saved length:', visitorsDB.length);
     }
 
     function autoSaveProcess() {
-      // اختياري: تستمر في حفظ نسخة محلية احتياطية
       saveDataToLocal();
       const badge = document.getElementById('saveStatus');
       const dot = document.getElementById('saveDot');
-      badge.innerText = 'تم الحفظ: ' +
-        new Date().toLocaleTimeString('en-US',
-          {hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit'});
-      dot.style.color = '#2ecc71';
-      setTimeout(() => { badge.innerText = 'النظام متصل'; }, 3000);
+      if (badge && dot) {
+        badge.innerText = 'تم الحفظ: ' +
+          new Date().toLocaleTimeString('en-US',
+            {hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit'});
+        dot.style.color = '#2ecc71';
+        setTimeout(() => { badge.innerText = 'النظام متصل'; }, 3000);
+      }
     }
 
     function updateDashboard() {
@@ -594,7 +593,6 @@
       }).then(async result => {
         if (result.isConfirmed) {
           try {
-            // حذف من الخادم (يفترض وجود DELETE /api/visitors/:id)
             await fetch(`/api/visitors/${id}`, { method: 'DELETE' });
           } catch (err) {
             console.error('[deleteVisitor] delete from API error:', err);
@@ -668,8 +666,8 @@
     }
 
     function printBadge() {
-      const name = document.getElementById('vName').value;
-      const org  = document.getElementById('vOrg').value;
+      const name = document.getElementById('vName')?.value;
+      const org  = document.getElementById('vOrg')?.value;
 
       if (!name) {
         Swal.fire('تنبيه', 'أدخل اسم الزائر أولاً', 'warning');
@@ -684,7 +682,7 @@
             <h3 style="color:#EC671F; margin-bottom:5px;">GoStation</h3>
             <h2 style="margin:0; border-bottom:1px solid #ccc; padding-bottom:15px;">تصريح زائر</h2>
             <h1 style="font-size:2.5em; margin:30px 0; color:#3D2F7B;">${name}</h1>
-            <h3 style="color:#555;">${org}</h3>
+            <h3 style="color:#555;">${org || ''}</h3>
             <div style="margin-top:40px; text-align:right; font-size:14px;">
               <p><strong>التاريخ:</strong> ${new Date().toLocaleDateString('en-GB')}</p>
               <p><strong>الوقت:</strong> ${new Date().toLocaleTimeString('en-US',
@@ -709,7 +707,6 @@
     }
 
     function downloadBackup() {
-      console.log('[downloadBackup] visitorsDB length:', visitorsDB.length);
       const blob = new Blob([JSON.stringify(visitorsDB)], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
@@ -719,39 +716,22 @@
 
     function restoreBackup() {
       const file = document.getElementById('jsonFile').files[0];
-      console.log('[restoreBackup] selected file:', file);
-
-      if (!file) {
-        console.warn('[restoreBackup] no file selected');
-        return;
-      }
+      if (!file) return;
 
       const reader = new FileReader();
       reader.onload = e => {
-        console.log('[restoreBackup] raw content:', e.target.result);
-
         try {
           const parsed = JSON.parse(e.target.result || '[]');
-          console.log('[restoreBackup] parsed length:', Array.isArray(parsed) ? parsed.length : 'not array');
-
           if (!Array.isArray(parsed)) {
-            console.error('[restoreBackup] backup is not an array, aborting');
             Swal.fire('خطأ في الملف', 'صيغة النسخة الاحتياطية غير صحيحة', 'error');
             return;
           }
 
           visitorsDB = parsed;
-          console.log('[restoreBackup] visitorsDB length after assign:', visitorsDB.length);
-
           saveDataToLocal();
-          console.log('[restoreBackup] data saved to localStorage');
-
           Swal.fire('تم', 'تمت الاستعادة بنجاح', 'success');
           updateDashboard();
-          console.log('[restoreBackup] dashboard updated');
-
           switchPage('dashboard');
-          console.log('[restoreBackup] switched to dashboard page');
         } catch (err) {
           console.error('[restoreBackup] JSON parse error:', err);
           Swal.fire('خطأ في قراءة الملف', 'تعذر قراءة محتوى النسخة الاحتياطية', 'error');
@@ -764,14 +744,12 @@
       };
 
       reader.readAsText(file);
-      console.log('[restoreBackup] reader.readAsText called');
     }
 
     function clearAllData() {
       if (confirm('تحذير: هل أنت متأكد من حذف كافة البيانات؟')) {
         visitorsDB = [];
         localStorage.removeItem('GoStationDB');
-        console.log('[clearAllData] all data cleared');
         updateDashboard();
       }
     }
@@ -781,11 +759,7 @@
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const form = document.getElementById("visitor-form");
-
-      if (!form) {
-        console.error("لم يتم العثور على النموذج visitor-form");
-        return;
-      }
+      if (!form) return;
 
       form.addEventListener("submit", async function (e) {
         e.preventDefault();
@@ -816,8 +790,6 @@
           if (res.ok) {
             Swal.fire("تم الحفظ", "تم حفظ الزائر في النظام", "success");
             form.reset();
-
-            // بعد الحفظ من أي جهاز، نجلب البيانات من الخادم
             await loadDataFromServer();
           } else {
             Swal.fire("خطأ", result.message || "حدث خطأ أثناء الحفظ", "error");
@@ -831,7 +803,3 @@
   </script>
 </body>
 </html>
-
-
-
-
