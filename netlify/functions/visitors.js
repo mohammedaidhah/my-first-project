@@ -5,24 +5,34 @@ exports.handler = async (event, context) => {
   
   try {
     await client.connect();
-    const db = client.db('visitors_db'); // غيّر اسم الـDB إذا مختلف
+    const db = client.db('visitors_db');
     const collection = db.collection('visitors');
 
     if (event.httpMethod === 'GET') {
       const visitors = await collection.find({}).toArray();
       return {
         statusCode: 200,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json', 
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+        },
         body: JSON.stringify(visitors)
       };
     } 
     
     if (event.httpMethod === 'POST') {
       const data = JSON.parse(event.body);
-      const result = await collection.insertOne({ ...data, createdAt: new Date() });
+      const result = await collection.insertOne({ 
+        ...data, 
+        createdAt: new Date().toISOString() 
+      });
       return {
         statusCode: 201,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json', 
+          'Access-Control-Allow-Origin': '*'
+        },
         body: JSON.stringify({ success: true, id: result.insertedId })
       };
     }
@@ -31,6 +41,7 @@ exports.handler = async (event, context) => {
   } catch (error) {
     return { 
       statusCode: 500, 
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ error: error.message }) 
     };
   } finally {
