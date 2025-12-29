@@ -1,8 +1,0 @@
-{
-  "name": "sijil-zawar-netlify",
-  "version": "1.0.0",
-  "type": "module",
-  "dependencies": {
-    "mongodb": "^6.6.2"
-  }
-}
